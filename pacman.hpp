@@ -16,8 +16,8 @@ public:
     static SDL_Renderer* Renderer;
     pacman();
     void HandleEvent(SDL_Event* event);
-    bool update();
-    //void render();
+    void update();
+    int updateAngle();
     bool tryChanging();
     void keepMoving();
 
@@ -33,6 +33,7 @@ public:
     int col;
     int cellWidth = 15;
     int cellHeight = 15;
+    int angle=0;
     
 };
 
@@ -47,7 +48,7 @@ void pacman::HandleEvent(SDL_Event* event){
     {
         switch( event->key.keysym.sym )
         {
-            case SDLK_UP: {nextDirection = "up"; cout<<nextDirection; break;}
+            case SDLK_UP: {nextDirection = "up"; break;}
             case SDLK_DOWN: nextDirection = "down"; break;
             case SDLK_LEFT: nextDirection = "left"; break;
             case SDLK_RIGHT: nextDirection = "right"; break;
@@ -183,12 +184,16 @@ void pacman::keepMoving(){
     }
 }
 
-bool pacman::update(){
+void pacman::update(){
     if(!tryChanging())keepMoving();
 }
 
-//void pacman::render(){
-//    SDL_SetRenderDrawColor( pacman::Renderer, 0xFF, 0x00, 0x00, 0xFF );
-//    SDL_Rect fillRect = { col*cellWidth, row*cellHeight, cellWidth, cellHeight };
-//    SDL_RenderFillRect(pacman::Renderer, &fillRect );
-//}
+int pacman::updateAngle(){
+    if (currDirection =="still") return angle;  // this will retain the angle
+
+    if (currDirection =="down") angle = 90;
+    else if (currDirection == "left") angle = 180;
+    else if (currDirection =="up") angle = 270;
+    else if (currDirection == "right") angle = 0;
+    return angle;   // else we will update the angle
+}

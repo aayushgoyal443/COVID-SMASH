@@ -23,7 +23,9 @@ SDL_Texture* loadTexture( std::string path );
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 
-SDL_Texture* gTexture = NULL;
+SDL_Texture* gWallTexture = NULL;
+SDL_Texture* gGrassTexture = NULL;
+SDL_Texture* gPacmanTexture = NULL;
 
 pacman* Pacman = NULL;
 
@@ -81,12 +83,43 @@ bool init()
 	return success;
 }
 
+bool loadMedia(){
+	bool success = true;
+
+    //Load the walls
+    gPacmanTexture = loadTexture("Resources/pacman.png");
+    if (gPacmanTexture == NULL)
+    {
+        printf("Failed to load Pacman image!\n");
+        success = false;
+    }
+
+	gWallTexture = loadTexture("Resources/wall.png");
+    if (gWallTexture == NULL)
+    {
+        printf("Failed to load Pacman image!\n");
+        success = false;
+    }
+
+	gGrassTexture = loadTexture("Resources/grass.png");
+    if (gGrassTexture == NULL)
+    {
+        printf("Failed to load Pacman image!\n");
+        success = false;
+    }
+
+	return success;
+}
 
 void close()
 {
 	//Free loaded image
-	SDL_DestroyTexture( gTexture );
-	gTexture = NULL;
+	SDL_DestroyTexture( gWallTexture );
+	gWallTexture = NULL;
+	SDL_DestroyTexture( gPacmanTexture );
+	gPacmanTexture = NULL;
+	SDL_DestroyTexture( gGrassTexture );
+	gGrassTexture = NULL;
 
 	//Destroy window	
 	SDL_DestroyRenderer( gRenderer );
@@ -100,12 +133,41 @@ void close()
 }
 
 
+SDL_Texture *loadTexture(std::string path)
+{
+    //The final texture
+    SDL_Texture *newTexture = NULL;
+
+    //Load image at specified path
+    SDL_Surface *loadedSurface = IMG_Load(path.c_str());
+    if (loadedSurface == NULL)
+    {
+        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
+    }
+    else
+    {
+        //Create texture from surface pixels
+        newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+        if (newTexture == NULL)
+        {
+            printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+        }
+
+        //Get rid of old loaded surface
+        SDL_FreeSurface(loadedSurface);
+    }
+
+    return newTexture;
+}
+
 void frender(){
 	Pacman->update();
-	cout<<Pacman->x<<" "<<Pacman->y<<endl;
-    SDL_SetRenderDrawColor( gRenderer, 0xFF, 0x00, 0x00, 0xFF );
+
     SDL_Rect fillRect = { Pacman->x, Pacman->y, Pacman->cellWidth, Pacman->cellHeight };
-    SDL_RenderFillRect(gRenderer, &fillRect );
+	if (Pacman->updateAngle() == 180){
+		SDL_RenderCopyEx(gRenderer, gPacmanTexture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
+	}
+	else SDL_RenderCopyEx(gRenderer, gPacmanTexture, NULL, &fillRect, Pacman->updateAngle() , NULL,SDL_FLIP_NONE );
 }
 
 void updateScreen(){
@@ -114,7 +176,10 @@ void updateScreen(){
 		for(int j=0;j<width;j++){
 			SDL_Rect fillRect = { j*cellWidth, i*cellHeight, cellWidth, cellHeight };
 			if(maze[i][j]==1){
-				SDL_RenderFillRect( gRenderer, &fillRect );
+				SDL_RenderCopy(gRenderer, gWallTexture, NULL, &fillRect);
+			}
+			else{
+				SDL_RenderCopy(gRenderer, gGrassTexture, NULL, &fillRect);
 			}
 		}
 	}
@@ -124,10 +189,6 @@ void updateScreen(){
 
 void handleEvent(SDL_Event* event){
     Pacman->HandleEvent(event);
-}
-
-bool loadMedia(){
-return true;
 }
 
 int main( int argc, char* args[] )
