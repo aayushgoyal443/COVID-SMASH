@@ -31,8 +31,8 @@ public:
     int nxtCol;
     int row;
     int col;
-    int cellWidth = 15;
-    int cellHeight = 15;
+    int cellWidth = 24;
+    int cellHeight = 24;
     int angle=0;
     
 };
@@ -65,18 +65,18 @@ bool pacman::tryChanging(){
     }
     else if(nextDirection=="left"){
         if(y%cellWidth!=0){return false;}
-        if(x%15==0 && y%15==0){
-        	row = y/15;
-        	col = x/15;
+        if(x%cellWidth==0 && y%cellWidth==0){
+        	row = y/cellWidth;
+        	col = x/cellWidth;
         }
         trow = row;
         tcol = col-1;
     }
     else if(nextDirection=="right"){
         if(y%cellWidth!=0){return false;}
-        if(x%15==0 && y%15==0){
-        	row = y/15;
-        	col = x/15;
+        if(x%cellWidth==0 && y%cellWidth==0){
+        	row = y/cellWidth;
+        	col = x/cellWidth;
         }
         trow = row;
         tcol = col+1;
@@ -85,9 +85,9 @@ bool pacman::tryChanging(){
     else if(nextDirection=="up"){
     	//cout<<"f";
         if(x%cellWidth!=0){return false;}
-        if(x%15==0 && y%15==0){
-        	row = y/15;
-        	col = x/15;
+        if(x%cellWidth==0 && y%cellWidth==0){
+        	row = y/cellWidth;
+        	col = x/cellWidth;
         }
         trow = row-1;
         tcol = col;
@@ -95,9 +95,9 @@ bool pacman::tryChanging(){
     }
     else if(nextDirection=="down"){
         if(x%cellWidth!=0){return false;}
-        if(x%15==0 && y%15==0){
-        	row = y/15;
-        	col = x/15;
+        if(x%cellWidth==0 && y%cellWidth==0){
+        	row = y/cellWidth;
+        	col = x/cellWidth;
         }
         trow = row+1;
         tcol = col;
@@ -117,9 +117,9 @@ void pacman::keepMoving(){
     else if(currDirection=="left"){
         if(x%cellWidth!=0){x=x-3;return;}
         else{
-        	if(x%15==0 && y%15==0){
-		    	row = y/15;
-		    	col = x/15;
+        	if(x%cellWidth==0 && y%cellWidth==0){
+		    	row = y/cellWidth;
+		    	col = x/cellWidth;
 		    }
             if(maze[row][col-1]==1){
                 currDirection = "still";
@@ -134,9 +134,9 @@ void pacman::keepMoving(){
     else if(currDirection=="right"){
         if(x%cellWidth!=0){x+=3;return;}
         else{
-        	if(x%15==0 && y%15==0){
-		    	row = y/15;
-		    	col = x/15;
+        	if(x%cellWidth==0 && y%cellWidth==0){
+		    	row = y/cellWidth;
+		    	col = x/cellWidth;
 		    }
             if(maze[row][col+1]==1){
                 currDirection = "still";
@@ -151,9 +151,9 @@ void pacman::keepMoving(){
     else if(currDirection=="up"){
         if(y%cellWidth!=0){y-=3;return;}
         else{
-        	if(x%15==0 && y%15==0){
-		    	row = y/15;
-		    	col = x/15;
+        	if(x%cellWidth==0 && y%cellWidth==0){
+		    	row = y/cellWidth;
+		    	col = x/cellWidth;
 		    }
             if(maze[row-1][col]==1){
                 currDirection = "still";
@@ -168,9 +168,9 @@ void pacman::keepMoving(){
     else if(currDirection=="down"){
         if(y%cellWidth!=0){y+=3;return;}
         else{
-        	if(x%15==0 && y%15==0){
-		    	row = y/15;
-		    	col = x/15;
+        	if(x%cellWidth==0 && y%cellWidth==0){
+		    	row = y/cellWidth;
+		    	col = x/cellWidth;
 		    }
             if(maze[row+1][col]==1){
                 currDirection = "still";
