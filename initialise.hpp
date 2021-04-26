@@ -56,6 +56,8 @@ SDL_Texture* gWallTexture = NULL;
 SDL_Texture* gGrassTexture = NULL;
 SDL_Texture* gPacmanTexture = NULL;
 SDL_Texture* gZombieTexture = NULL;
+SDL_Texture* eggTexture = NULL;
+SDL_Texture* vaccineTexture = NULL;
 
 pacman* Pacman = NULL;
 
@@ -237,6 +239,19 @@ bool loadMedia()
         success = false;
     }
 
+    eggTexture = loadTexture("Resources/egg.png");
+    if (eggTexture == NULL)
+    {
+        printf("Failed to load egg image!\n");
+        success = false;
+    }
+
+    vaccineTexture = loadTexture("Resources/vaccine.png");
+    if (vaccineTexture == NULL)
+    {
+        printf("Failed to load vaccine image!\n");
+        success = false;
+    }
     return success;
 }
 

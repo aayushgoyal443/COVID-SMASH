@@ -24,7 +24,7 @@ socklen_t c_len, s_len;
 void maze_to_buffer();
 void change_maze();
 void pos_to_buffer(tuple<int, int, int> p );
-tuple <int,int,int> buffer_to_pos();
+tuple <int,int,int,int,int> buffer_to_pos();
 void make_server();
 void make_client();
 
@@ -46,8 +46,8 @@ void change_maze(){
     }
 }
 
-void pos_to_buffer(tuple<int, int, int> p ){
-    string out = to_string(get<0>(p));
+void pos_to_buffer(tuple<int, int, int, int, int> p ){
+    string out = to_string(get<0>(p));  // x coordinate
     int n = out.size();
     for (int i=n;i<4;i++){
         out = "0"+ out;
@@ -55,7 +55,7 @@ void pos_to_buffer(tuple<int, int, int> p ){
     for (int i=0;i<=3;i++){
         buffer[i] = out[i];
     }
-    out = to_string(get<1>(p));
+    out = to_string(get<1>(p)); // y coordinate
     n = out.size();
     for (int i = n;i<4;i++){
         out = '0' + out;
@@ -63,7 +63,7 @@ void pos_to_buffer(tuple<int, int, int> p ){
     for (int i=4;i<=7;i++){
         buffer[i] = out[i-4];
     }
-    out = to_string(get<2>(p));
+    out = to_string(get<2>(p)); // angle
     n = out.size();
     for (int i = n;i<4;i++){
         out = '0' + out;
@@ -71,12 +71,30 @@ void pos_to_buffer(tuple<int, int, int> p ){
     for (int i=8;i<=11;i++){
         buffer[i] = out[i-8];
     }
+    out = to_string(get<3>(p)); // row number
+    n = out.size();
+    for (int i = n;i<4;i++){
+        out = '0' + out;
+    }
+    for (int i=12;i<=15;i++){
+        buffer[i] = out[i-12];
+    }
+    out = to_string(get<4>(p)); // col number
+    n = out.size();
+    for (int i = n;i<4;i++){
+        out = '0' + out;
+    }
+    for (int i=16;i<=19;i++){
+        buffer[i] = out[i-16];
+    }
 }
 
-tuple <int,int,int> buffer_to_pos(){
+tuple <int,int,int,int,int> buffer_to_pos(){
     int x=0;
     int y=0;
     int angle=0;
+    int row =0;
+    int col=0;
     for (int i=3;i>=0;i--){
         x += (buffer[i]-'0')*pow(10,3-i);
     }
@@ -86,7 +104,13 @@ tuple <int,int,int> buffer_to_pos(){
     for (int i=11;i>=8;i--){
         angle += (buffer[i]-'0')*pow(10, 11-i);
     }
-    return {x,y, angle};
+    for (int i=15;i>=12;i--){
+        row += (buffer[i]-'0')*pow(10, 15-i);
+    }
+    for (int i=19;i>=16;i--){
+        col += (buffer[i]-'0')*pow(10, 19-i);
+    }
+    return {x,y, angle, row, col};
 }
 
 void make_server(){

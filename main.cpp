@@ -8,8 +8,7 @@
 
 using namespace std;
 
-void frender(SDL_Texture* texture, tuple<int,int,int> pos){
-	
+void frender(SDL_Texture* texture, tuple<int,int,int,int,int> pos){
     SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
 	if (get<2>(pos) == 180){
 		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
@@ -25,14 +24,22 @@ void updateScreen(SDL_Texture* texture){
 			if(maze[i][j]==1){
 				SDL_RenderCopy(gameRenderer, gWallTexture, NULL, &fillRect);
 			}
-			else{
+			else if(maze[i][j]==2){
 				SDL_RenderCopy(gameRenderer, gGrassTexture, NULL, &fillRect);
+                SDL_RenderCopy(gameRenderer, eggTexture, NULL, &fillRect);
 			}
+            else if(maze[i][j]==3){
+				SDL_RenderCopy(gameRenderer, gGrassTexture, NULL, &fillRect);
+                SDL_RenderCopy(gameRenderer, vaccineTexture, NULL, &fillRect);
+			}
+            else{
+                SDL_RenderCopy(gameRenderer, gGrassTexture, NULL, &fillRect);
+            }
 		}
 	}
     Pacman->update();
     Pacman->updateAngle();
-	frender(texture, {Pacman->x, Pacman->y, Pacman-> angle});
+	frender(texture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col});
 }
 
 void handleEvent(SDL_Event* event){
@@ -94,12 +101,14 @@ int main(int argc, char *args[])
                     case SDLK_s:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             make_server();
+                            Pacman->type = 0;
                             gameServer = true;
                         }
                         break;
                     case SDLK_c:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             make_client();
+                            Pacman->type =1;
                             gameClient = true;
                         }
                         break;
@@ -222,16 +231,19 @@ int main(int argc, char *args[])
                 recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
                 // cout <<"Position of the client recieved\n";
                 frender(gZombieTexture, buffer_to_pos());
+                Pacman->checkCollision(buffer_to_pos());
 
                 // Sending our position to the client
-                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle});
+                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col});
                 sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+                maze_to_buffer();
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
                 // cout <<"Position was sent to the client\n";
             }
             else if (gameClient){
                 updateScreen(gZombieTexture);
                 // Sending our position to the server
-                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle});
+                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col});
                 sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
                 // cout <<"Client position was sent to the server\n";
 
@@ -239,6 +251,9 @@ int main(int argc, char *args[])
                 recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
                 // cout <<"Server position received\n";
                 frender(gPacmanTexture, buffer_to_pos());
+                recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+                //cout <<"Map information recieved\n";
+                change_maze(); 
             }
 
             SDL_RenderPresent( gameRenderer );

@@ -10,19 +10,20 @@
 
 
 class pacman{
-
 public:
-
     static SDL_Renderer* Renderer;
     pacman();
     void HandleEvent(SDL_Event* event);
+    void checkCollision(tuple<int,int,int,int,int> posMonster);
     void update();
     int updateAngle();
     bool tryChanging();
     void keepMoving();
-
-
+    int type = 0; // 0 for pacman and 1 for monster
+    int eggsEaten = 0;
     int frame = 0;
+    bool powerful = false;
+    int powerTime = 0;
     string nextDirection = "still";
     string currDirection = "still";
     int x;
@@ -33,8 +34,7 @@ public:
     int col;
     int cellWidth = 24;
     int cellHeight = 24;
-    int angle=0;
-    
+    int angle=0;    
 };
 
 pacman::pacman(){
@@ -57,6 +57,19 @@ void pacman::HandleEvent(SDL_Event* event){
     
 }
 
+void pacman::checkCollision(tuple<int,int,int,int,int> posMonster){
+    int rowMonster = get<3>(posMonster);
+    int colMonster = get<4>(posMonster);
+    if(colMonster == col && rowMonster==row){
+        if(powerful){
+            cout<<"Monster Killed\n";
+        }
+        else{
+            cout<<"Pacman Killed\n";
+        }
+    }
+}
+
 bool pacman::tryChanging(){
     int tcol;
     int trow;
@@ -68,6 +81,14 @@ bool pacman::tryChanging(){
         if(x%cellWidth==0 && y%cellWidth==0){
         	row = y/cellWidth;
         	col = x/cellWidth;
+            if(maze[row][col]==2 && type ==0){
+                maze[row][col]=0;
+                eggsEaten++;
+            }
+            else if(maze[row][col]==3 && type ==0){
+                maze[row][col]=0;
+                powerTime = 150;
+            }
         }
         trow = row;
         tcol = col-1;
@@ -77,6 +98,14 @@ bool pacman::tryChanging(){
         if(x%cellWidth==0 && y%cellWidth==0){
         	row = y/cellWidth;
         	col = x/cellWidth;
+            if(maze[row][col]==2 && type ==0){
+                maze[row][col]=0;
+                eggsEaten++;
+            }
+            else if(maze[row][col]==3 && type ==0){
+                maze[row][col]=0;
+                powerTime = 150;
+            }
         }
         trow = row;
         tcol = col+1;
@@ -88,6 +117,14 @@ bool pacman::tryChanging(){
         if(x%cellWidth==0 && y%cellWidth==0){
         	row = y/cellWidth;
         	col = x/cellWidth;
+            if(maze[row][col]==2 && type==0){
+                maze[row][col]=0;
+                eggsEaten++;
+            }
+            else if(maze[row][col]==3 && type ==0){
+                maze[row][col]=0;
+                powerTime = 150;
+            }
         }
         trow = row-1;
         tcol = col;
@@ -98,6 +135,14 @@ bool pacman::tryChanging(){
         if(x%cellWidth==0 && y%cellWidth==0){
         	row = y/cellWidth;
         	col = x/cellWidth;
+            if(maze[row][col]==2 && type==0){
+                maze[row][col]=0;
+                eggsEaten++;
+            }
+            else if(maze[row][col]==3 && type ==0){
+                maze[row][col]=0;
+                powerTime = 150;
+            }
         }
         trow = row+1;
         tcol = col;
@@ -120,6 +165,14 @@ void pacman::keepMoving(){
         	if(x%cellWidth==0 && y%cellWidth==0){
 		    	row = y/cellWidth;
 		    	col = x/cellWidth;
+                if(maze[row][col]==2 && type==0){
+                    maze[row][col]=0;
+                    eggsEaten++;
+                }
+                else if(maze[row][col]==3 && type ==0){
+                    maze[row][col]=0;
+                    powerTime = 150;
+                }
 		    }
             if(maze[row][col-1]==1){
                 currDirection = "still";
@@ -137,6 +190,14 @@ void pacman::keepMoving(){
         	if(x%cellWidth==0 && y%cellWidth==0){
 		    	row = y/cellWidth;
 		    	col = x/cellWidth;
+                if(maze[row][col]==2 && type==0){
+                    maze[row][col]=0;
+                    eggsEaten++;
+                }
+                else if(maze[row][col]==3 && type ==0){
+                    maze[row][col]=0;
+                    powerTime = 150;
+                }
 		    }
             if(maze[row][col+1]==1){
                 currDirection = "still";
@@ -154,6 +215,14 @@ void pacman::keepMoving(){
         	if(x%cellWidth==0 && y%cellWidth==0){
 		    	row = y/cellWidth;
 		    	col = x/cellWidth;
+                if(maze[row][col]==2 && type==0){
+                    maze[row][col]=0;
+                    eggsEaten++;
+                }
+                else if(maze[row][col]==3 && type ==0){
+                    maze[row][col]=0;
+                    powerTime = 150;
+                }
 		    }
             if(maze[row-1][col]==1){
                 currDirection = "still";
@@ -171,6 +240,14 @@ void pacman::keepMoving(){
         	if(x%cellWidth==0 && y%cellWidth==0){
 		    	row = y/cellWidth;
 		    	col = x/cellWidth;
+                if(maze[row][col]==2 && type==0){
+                    maze[row][col]=0;
+                    eggsEaten++;
+                }
+                else if(maze[row][col]==3 && type ==0){
+                    maze[row][col]=0;
+                    powerTime = 150;
+                }
 		    }
             if(maze[row+1][col]==1){
                 currDirection = "still";
@@ -185,6 +262,11 @@ void pacman::keepMoving(){
 }
 
 void pacman::update(){
+    if(type == 0){
+        powerTime = max(0,powerTime-1);
+        if(powerTime>0)powerful=true;
+        else powerful = false;
+    }
     if(!tryChanging())keepMoving();
 }
 

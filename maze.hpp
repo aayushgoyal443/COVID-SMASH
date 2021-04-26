@@ -7,7 +7,7 @@ using namespace std;
 const int height = 29;
 const int width = 29;
 
-int maze[height][width]={};  //1 for wall and 0 for empty
+int maze[height][width]={};  //1 for wall, 0 for empty, 2 for egg, 3 for vaccine
 int visit[height][width]={};
 
 
@@ -104,6 +104,30 @@ void middleWall(){
 }
 
 
+void fillEggs(){
+    for(int i=0;i<height;i++){
+        for(int j=0;j<width;j++){
+            if(maze[i][j]==0)maze[i][j]=2;
+        }
+    }
+    maze[1][1]=0;
+}
+
+
+void putVaccine(){
+    vector<pair<int,int>> posVacc;
+    for(int i=0;i<height;i++){
+        for(int j=0;j<width;j++){
+            if(maze[i][j]!=1)posVacc.push_back({i,j});
+        }
+    }
+    int gap = posVacc.size()/6;
+    int j = gap;
+    while(j<posVacc.size()){
+        maze[posVacc[j].first][posVacc[j].second] = 3;
+        j+=gap;
+    }
+}
 
 void formMaze(){
     srand(time(0));
@@ -111,6 +135,8 @@ void formMaze(){
     dfsMaze(1,1);
     mirror();
     middleWall();
+    fillEggs();
+    putVaccine();
    /*for(int i=0;i<height;i++){
    	for(int j=0;j<width;j++){
    		cout<<maze[i][j];
