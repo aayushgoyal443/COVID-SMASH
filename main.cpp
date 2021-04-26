@@ -1,28 +1,23 @@
 #include <bits/stdc++.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <stdio.h>
-#include <string>
 #include "maze.hpp"
 #include "pacman.hpp"
 #include "initialise.hpp"
-
+#include "network.hpp"
 
 using namespace std;
 
-
-
-void frender(){
-	Pacman->update();
-
-    SDL_Rect fillRect = { Pacman->x, Pacman->y, Pacman->cellWidth, Pacman->cellHeight };
-	if (Pacman->updateAngle() == 180){
-		SDL_RenderCopyEx(gameRenderer, gPacmanTexture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
+void frender(SDL_Texture* texture, tuple<int,int,int> pos){
+	
+    SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
+	if (get<2>(pos) == 180){
+		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
 	}
-	else SDL_RenderCopyEx(gameRenderer, gPacmanTexture, NULL, &fillRect, Pacman->updateAngle() , NULL,SDL_FLIP_NONE );
+	else SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, get<2>(pos) , NULL,SDL_FLIP_NONE );
 }
 
-void updateScreen(){
+void updateScreen(SDL_Texture* texture){
 	SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0x00, 0x00, 0xFF );
 	for(int i=0;i<height;i++){
 		for(int j=0;j<width;j++){
@@ -35,9 +30,10 @@ void updateScreen(){
 			}
 		}
 	}
-	frender();
+    Pacman->update();
+    Pacman->updateAngle();
+	frender(texture, {Pacman->x, Pacman->y, Pacman-> angle});
 }
-
 
 void handleEvent(SDL_Event* event){
     Pacman->HandleEvent(event);
@@ -81,7 +77,7 @@ int main(int argc, char *args[])
     while (!quit)
     {
         //Handle events on queue
-        while(!gameRunning && !quit){
+        while(!gameRunning && !quit && !gameServer && !gameClient){
             while (SDL_PollEvent(&e) != 0)
             {
                 //User requests quit
@@ -95,6 +91,18 @@ int main(int argc, char *args[])
                     //Select surfaces based on key press
                     switch (e.key.keysym.sym)
                     {
+                    case SDLK_s:
+                        if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
+                            make_server();
+                            gameServer = true;
+                        }
+                        break;
+                    case SDLK_c:
+                        if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
+                            make_client();
+                            gameClient = true;
+                        }
+                        break;
                     case SDLK_m:
                         gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
                         break;
@@ -127,7 +135,7 @@ int main(int argc, char *args[])
                         }
                         break;
 
-                    case SDLK_c:
+                    case SDLK_z:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU] || gameCurrentTexture == gameKeyPressTextures[KEY_HELP])
                             gameCurrentTexture = gameKeyPressTextures[KEY_CREDITS];
                         else
@@ -164,6 +172,8 @@ int main(int argc, char *args[])
             //Update screen
             SDL_RenderPresent(gameRenderer);
         }
+
+        // While running in Single player
         while(gameRunning){
             frameStart = SDL_GetTicks();
             //Handle events on queue
@@ -179,8 +189,59 @@ int main(int argc, char *args[])
             }
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
             SDL_RenderClear( gameRenderer );				
-            updateScreen();				
+            updateScreen(gPacmanTexture);				
             SDL_RenderPresent( gameRenderer );	
+            frameTime = SDL_GetTicks()-frameStart;
+            if(delay>frameTime){
+                SDL_Delay(delay - frameTime);
+            }
+        }
+
+        // When running in Double player
+        while (gameServer || gameClient){
+            frameStart = SDL_GetTicks();
+            //Handle events on queue
+            while( SDL_PollEvent( &e ) != 0 )
+            {
+                //User requests quit
+                if( e.type == SDL_QUIT )
+                {
+                    gameServer = false;
+                    gameClient = false;
+                    quit = true;
+                    close(sockfd);
+                }
+                handleEvent(&e);
+            }
+            SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_RenderClear( gameRenderer );
+
+            if (gameServer){
+                updateScreen(gPacmanTexture);
+                // getting the position of Enenmy and rendering it
+                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+                // cout <<"Position of the client recieved\n";
+                frender(gZombieTexture, buffer_to_pos());
+
+                // Sending our position to the client
+                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle});
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+                // cout <<"Position was sent to the client\n";
+            }
+            else if (gameClient){
+                updateScreen(gZombieTexture);
+                // Sending our position to the server
+                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle});
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+                // cout <<"Client position was sent to the server\n";
+
+                // getting the position of server and rendering it
+                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+                // cout <<"Server position received\n";
+                frender(gPacmanTexture, buffer_to_pos());
+            }
+
+            SDL_RenderPresent( gameRenderer );
             frameTime = SDL_GetTicks()-frameStart;
             if(delay>frameTime){
                 SDL_Delay(delay - frameTime);

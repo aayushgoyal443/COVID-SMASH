@@ -9,6 +9,8 @@ using namespace std;
 
 
 bool gameRunning = false;
+bool gameServer = false;
+bool gameClient  = false;
 const int SCREEN_WIDTH = 720*1.5;
 const int SCREEN_HEIGHT = 540*1.5;
 const int cellHeight =24;
@@ -53,6 +55,7 @@ SDL_Texture *gameCurrentTexture = NULL;
 SDL_Texture* gWallTexture = NULL;
 SDL_Texture* gGrassTexture = NULL;
 SDL_Texture* gPacmanTexture = NULL;
+SDL_Texture* gZombieTexture = NULL;
 
 pacman* Pacman = NULL;
 
@@ -213,17 +216,24 @@ bool loadMedia()
         success = false;
     }
 
+    gZombieTexture = loadTexture("Resources/zombie.png");
+    if (gZombieTexture == NULL)
+    {
+        printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
 	gWallTexture = loadTexture("Resources/wall.png");
     if (gWallTexture == NULL)
     {
-        printf("Failed to load Pacman image!\n");
+        printf("Failed to load wall image!\n");
         success = false;
     }
 
 	gGrassTexture = loadTexture("Resources/grass.png");
     if (gGrassTexture == NULL)
     {
-        printf("Failed to load Pacman image!\n");
+        printf("Failed to load grass image!\n");
         success = false;
     }
 
