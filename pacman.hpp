@@ -272,7 +272,6 @@ void pacman::update(){
 
 int pacman::updateAngle(){
     if (currDirection =="still") return angle;  // this will retain the angle
-
     if (currDirection =="down") angle = 90;
     else if (currDirection == "left") angle = 180;
     else if (currDirection =="up") angle = 270;

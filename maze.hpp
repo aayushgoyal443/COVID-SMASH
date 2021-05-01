@@ -129,12 +129,61 @@ void putVaccine(){
     }
 }
 
+bool junction(int i,int j){
+    cout<<i<<" "<<j<<endl;
+    if(maze[i][j-1]==1 && maze[i][j+1]==1 && maze[i-1][j]==0 && maze[i+1][j]==0)return false;
+    if(maze[i][j-1]==0 && maze[i][j+1]==0 && maze[i-1][j]==1 && maze[i+1][j]==1)return false;
+    return true;
+}
+
+void breakSomeWalls(){
+    cout<<"yes";
+    for(int i=1;i<height-1;i++){
+        int count = 0;
+        int j = 0;
+        while(j<width-2){
+            j++;
+            if(maze[i][j]==0){
+                count = 0;
+            }
+            else{
+                count++;
+            }
+            if(count>=4 && !(junction(i,j))){
+                maze[i][j]=0;
+                count = 0;
+            }     
+        }
+        
+    }
+    for(int i=1;i<width-1;i++){
+        int count = 0;
+        int j = 0;
+        while(j<height-2){
+            j++;
+            if(maze[j][i]==0){
+                count = 0;
+            }
+            else{
+                count++;
+            } 
+            if(count>=4 && !(junction(j,i))){
+                maze[j][i]=0;
+                count = 0;
+            }    
+        }
+        
+    }
+    maze[height-2][width-2] = 0;
+}
+
 void formMaze(){
     srand(time(0));
     initMaze();
     dfsMaze(1,1);
     mirror();
     middleWall();
+    breakSomeWalls();
     fillEggs();
     putVaccine();
    /*for(int i=0;i<height;i++){

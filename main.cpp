@@ -3,8 +3,10 @@
 #include <SDL2/SDL_image.h>
 #include "maze.hpp"
 #include "pacman.hpp"
+#include "bot.hpp"
 #include "initialise.hpp"
 #include "network.hpp"
+
 
 using namespace std;
 
@@ -39,7 +41,10 @@ void updateScreen(SDL_Texture* texture){
 	}
     Pacman->update();
     Pacman->updateAngle();
+    BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+    BOT->updateAngle();
 	frender(texture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col});
+    frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
 }
 
 void handleEvent(SDL_Event* event){
@@ -52,6 +57,7 @@ int main(int argc, char *args[])
     //Start up SDL and create window
     formMaze();
     Pacman = new pacman();
+    BOT = new bot();
     const int FPS = 40;
     const int delay = 1000/FPS;
     

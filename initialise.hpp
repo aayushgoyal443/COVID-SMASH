@@ -60,7 +60,7 @@ SDL_Texture* eggTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 
 pacman* Pacman = NULL;
-
+bot* BOT = NULL;
 
 
 KeyPress_start check_position(int x, int y)
