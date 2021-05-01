@@ -60,7 +60,9 @@ SDL_Texture* eggTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 
 pacman* Pacman = NULL;
-bot* BOT = NULL;
+bot* BOT = NULL;    // this will directly chase the Pacman 
+bot* BOT2 = NULL;   // this will directly chase the Pacman from 180 degree behind
+bot* BOT3 = NULL;   // this will chase the pacman from Front, 4 rows change scheme.
 
 
 KeyPress_start check_position(int x, int y)

@@ -16,6 +16,8 @@ public:
     int favourLeft(int prow, int pcol);
     int favourRight(int prow, int pcol);
     int updateAngle();
+    pair <int, int> changep (int prow, int pcol, string pdir, int offset);
+    pair <int, int> target (int prow, int pcol, string pdir, int crow, int ccol);
     string currDirection = "still";
     string nextDirection = "still";
     int mode = 0; // 0-chase and 1-run away
@@ -38,6 +40,21 @@ public:
 bot::bot(){
     row = col = 27;
     x = y = row*cellWidth;
+}
+
+
+pair <int, int> bot::changep (int prow, int pcol, string pdir, int offset){
+    if (pdir == "down") return {prow+offset, pcol };
+    else if (pdir =="up") return {prow-offset, pcol};
+    else if (pdir =="left") return {prow, pcol-offset};
+    else return {prow, pcol+offset};
+}
+
+pair <int, int> bot::target (int prow, int pcol, string pdir, int crow, int ccol){
+    pair <int, int> newpos = changep(prow, pcol, pdir, 2);
+    prow = newpos.first;
+    pcol = newpos.second;
+    return {2*prow - crow, 2*pcol - ccol};
 }
 
 int bot::favourLeft(int prow, int pcol){

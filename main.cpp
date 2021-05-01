@@ -41,10 +41,7 @@ void updateScreen(SDL_Texture* texture){
 	}
     Pacman->update();
     Pacman->updateAngle();
-    BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
-    BOT->updateAngle();
-	frender(texture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col});
-    frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+    frender(texture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col});
 }
 
 void handleEvent(SDL_Event* event){
@@ -58,6 +55,8 @@ int main(int argc, char *args[])
     formMaze();
     Pacman = new pacman();
     BOT = new bot();
+    BOT2 = new bot();
+    BOT3 = new bot();
     const int FPS = 40;
     const int delay = 1000/FPS;
     
@@ -205,6 +204,22 @@ int main(int argc, char *args[])
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
             SDL_RenderClear( gameRenderer );				
             updateScreen(gPacmanTexture);				
+            
+            BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+            BOT->updateAngle();
+            pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
+            BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
+            BOT2->updateAngle();
+            pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
+            BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
+            BOT3->updateAngle();	
+            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+            Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+            Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+            Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+
             SDL_RenderPresent( gameRenderer );	
             frameTime = SDL_GetTicks()-frameStart;
             if(delay>frameTime){
@@ -236,8 +251,9 @@ int main(int argc, char *args[])
                 // getting the position of Enenmy and rendering it
                 recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
                 // cout <<"Position of the client recieved\n";
-                frender(gZombieTexture, buffer_to_pos());
-                Pacman->checkCollision(buffer_to_pos());
+                tuple<int, int, int, int, int> enemyPos = buffer_to_pos(); 
+                frender(gZombieTexture, enemyPos);
+                Pacman->checkCollision(enemyPos);
 
                 // Sending our position to the client
                 pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col});
@@ -245,6 +261,30 @@ int main(int argc, char *args[])
                 maze_to_buffer();
                 sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
                 // cout <<"Position was sent to the client\n";
+
+                BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+                BOT->updateAngle();
+                frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+                pos_to_buffer({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+                Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
+
+                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, get<3>(enemyPos), get<4>(enemyPos)); //this way it will assist the enemy
+                BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
+                BOT2->updateAngle();
+                frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+                pos_to_buffer({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+                Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+
+                pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
+                BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
+                BOT3->updateAngle();
+                frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+                pos_to_buffer({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+                Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+
             }
             else if (gameClient){
                 updateScreen(gZombieTexture);
@@ -260,6 +300,16 @@ int main(int argc, char *args[])
                 recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
                 //cout <<"Map information recieved\n";
                 change_maze(); 
+
+                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+                frender(gZombieTexture, buffer_to_pos());
+
+                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+                frender(gZombieTexture, buffer_to_pos());
+
+                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+                frender(gZombieTexture, buffer_to_pos());
+                
             }
 
             SDL_RenderPresent( gameRenderer );

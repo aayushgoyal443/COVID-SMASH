@@ -23,7 +23,7 @@ socklen_t c_len, s_len;
 
 void maze_to_buffer();
 void change_maze();
-void pos_to_buffer(tuple<int, int, int> p );
+void pos_to_buffer(tuple<int, int, int, int, int> p );
 tuple <int,int,int,int,int> buffer_to_pos();
 void make_server();
 void make_client();

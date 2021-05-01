@@ -130,14 +130,14 @@ void putVaccine(){
 }
 
 bool junction(int i,int j){
-    cout<<i<<" "<<j<<endl;
+    // cout<<i<<" "<<j<<endl;
     if(maze[i][j-1]==1 && maze[i][j+1]==1 && maze[i-1][j]==0 && maze[i+1][j]==0)return false;
     if(maze[i][j-1]==0 && maze[i][j+1]==0 && maze[i-1][j]==1 && maze[i+1][j]==1)return false;
     return true;
 }
 
 void breakSomeWalls(){
-    cout<<"yes";
+    // cout<<"yes";
     for(int i=1;i<height-1;i++){
         int count = 0;
         int j = 0;
