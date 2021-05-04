@@ -16,6 +16,8 @@ public:
     int favourLeft(int prow, int pcol);
     int favourRight(int prow, int pcol);
     int updateAngle();
+    string getDirection(int dx, int dy);
+    vector<pair<int,int>> getValidCells();
     pair <int, int> changep (int prow, int pcol, string pdir, int offset);
     pair <int, int> target (int prow, int pcol, string pdir, int crow, int ccol);
     string currDirection = "still";
@@ -57,145 +59,75 @@ pair <int, int> bot::target (int prow, int pcol, string pdir, int crow, int ccol
     return {2*prow - crow, 2*pcol - ccol};
 }
 
-int bot::favourLeft(int prow, int pcol){
-    int trow = row;
-    int tcol = col-1;
-    if(maze[trow][tcol]==1)return -1;
-    int disPrev = (row-prow)*(row-prow)+(col-pcol)*(col-pcol);
-    int distNew = (trow-prow)*(trow-prow)+(tcol-pcol)*(tcol-pcol);
-    if(mode==0){
-        if(distNew<disPrev) return 2;
-        if(distNew == disPrev)return 1;
+
+
+vector<pair<int,int>> bot::getValidCells(){
+    vector<pair<int,int>> nextValidCells;
+    if(maze[row+1][col]!=1 && currDirection!="up"){
+        nextValidCells.push_back({row+1,col});
     }
-    if(mode==1){
-        if(distNew > disPrev) return 2;
-        if(distNew == disPrev)return 1;
+    if(maze[row-1][col]!=1 && currDirection!="down"){
+        nextValidCells.push_back({row-1,col});
     }
-    return 0;
+    if(maze[row][col+1]!=1 && currDirection!="left"){
+        nextValidCells.push_back({row,col+1});
+    }
+    if(maze[row][col-1]!=1 && currDirection!="right"){
+        nextValidCells.push_back({row,col-1});
+    }
+    return nextValidCells;
 }
 
-int bot::favourRight(int prow, int pcol){
-    int trow = row;
-    int tcol = col+1;
-    if(maze[trow][tcol]==1)return -1;
-    int disPrev = (row-prow)*(row-prow)+(col-pcol)*(col-pcol);
-    int distNew = (trow-prow)*(trow-prow)+(tcol-pcol)*(tcol-pcol);
-    if(mode==0){
-        if(distNew<disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    if(mode==1){
-        if(distNew > disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    return 0;
-}
 
-int bot::favourUp(int prow, int pcol){
-    int trow = row -1;
-    int tcol = col;
-    if(maze[trow][tcol]==1)return -1;
-    int disPrev = (row-prow)*(row-prow)+(col-pcol)*(col-pcol);
-    int distNew = (trow-prow)*(trow-prow)+(tcol-pcol)*(tcol-pcol);
-    if(mode==0){
-        if(distNew<disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    if(mode==1){
-        if(distNew > disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    return 0;
-}
-
-int bot::favourDown(int prow, int pcol){
-    int trow = row + 1;
-    int tcol = col;
-    if(maze[trow][tcol]==1)return -1;
-    int disPrev = (row-prow)*(row-prow)+(col-pcol)*(col-pcol);
-    int distNew = (trow-prow)*(trow-prow)+(tcol-pcol)*(tcol-pcol);
-    if(mode==0){
-        if(distNew<disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    if(mode==1){
-        if(distNew > disPrev) return 2;
-        if(distNew == disPrev)return 1;
-    }
-    return 0;
+string bot::getDirection(int dx, int dy){
+    if(dx == 1 && dy == 0)return "right";
+    if(dx == -1 && dy == 0)return "left";
+    if(dx == 0 && dy == 1)return "down";
+    if(dx == 0 && dy == -1)return "up";
+    return "still";
 }
 
 void bot::getNextCell(int prow, int pcol){
-    int t1 = favourLeft(prow,pcol);
-    int t2 = favourUp(prow,pcol);
-    int t3 = favourRight(prow,pcol);
-    int t4 = favourDown(prow,pcol);
-    if(t1 == 2 && currDirection!="right"){
-        currDirection = "left";
-        return;
+    vector<pair<int,int>> nextValidCells = getValidCells();
+    int distL = 1e7;
+    int distG = 0;
+    string turnDirection = "still";
+    for(auto j:nextValidCells){
+        int tempDist = (j.first-prow)*(j.first-prow) + (j.second-pcol)*(j.second-pcol);
+        if(tempDist < distL && mode == 0){
+            turnDirection = getDirection( j.second - col, j.first - row);
+            distL = tempDist;
+        }
+        if(tempDist > distG && mode == 1){
+            turnDirection = getDirection( j.second - col, j.first - row);
+            distG = tempDist;
+        }
     }
-    if(t2 == 2 && currDirection!="down"){
-        currDirection = "up";
-        return;
-    }
-    if(t3 == 2 && currDirection!="left"){
-        currDirection = "right";
-        return;
-    }
-    if(t4 == 2 && currDirection!="up"){
-        currDirection = "down";
-        return;
-    }
-    if(t1 == 1 && currDirection!="right"){
-        currDirection = "left";
-        return;
-    }
-    if(t2 == 1 && currDirection!="down"){
-        currDirection = "up";
-        return;
-    }
-    if(t3 == 1 && currDirection!="left"){
-        currDirection = "right";
-        return;
-    }
-    if(t4 == 1 && currDirection!="up"){
-        currDirection = "down";
-        return;
-    }
-    if(t1 == 0 && currDirection!="right"){
-        currDirection = "left";
-        return;
-    }
-    if(t2 == 0 && currDirection!="down"){
-        currDirection = "up";
-        return;
-    }
-    if(t3 == 0 && currDirection!="left"){
-        currDirection = "right";
-        return;
-    }
-    if(t4 == 0 && currDirection!="up"){
-        currDirection = "down";
-        return;
-    }
+    currDirection = turnDirection;
 }
 
 void bot::update(int prow, int pcol, bool runAway){
     if(runAway)mode = 1;
     else mode = 0;
     if(x%cellWidth == 0 && y%cellWidth == 0){
+        row = y/cellWidth;
+        col = x/cellWidth;
         getNextCell(prow, pcol);
         if(currDirection == "left"){
-            col--;
+            nxtRow = row;
+            nxtCol = col-1;
         }
         else if(currDirection == "right"){
-            col++;
+            nxtRow = row;
+            nxtCol = col+1;
         }
         else if(currDirection == "down"){
-            row++;
+            nxtRow = row+1;
+            nxtCol = col;
         }
         else if(currDirection == "up"){
-            row--;
+            nxtRow = row-1;
+            nxtCol = col;
         }
     }
     if(currDirection == "still")return;
