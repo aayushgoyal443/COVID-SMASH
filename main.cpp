@@ -10,8 +10,9 @@
 
 using namespace std;
 
-void frender(SDL_Texture* texture, tuple<int,int,int,int,int> pos){
+void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
     SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
+    if (texture == gZombieTexture && get<5>(pos)==0) texture= deadZombieTexture;
 	if (get<2>(pos) == 180){
 		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
 	}
@@ -41,7 +42,10 @@ void updateScreen(SDL_Texture* texture){
 	}
     Pacman->update();
     Pacman->updateAngle();
-    frender(texture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col});
+    if (texture == gZombieTexture){
+        frender(gZombieTexture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,zombie_alive,1 });
+    }
+    else frender(gPacmanTexture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,pacmanLives,1 });
 }
 
 void handleEvent(SDL_Event* event){
@@ -53,7 +57,6 @@ int main(int argc, char *args[])
 {
     //Start up SDL and create window
     formMaze();
-    Pacman = new pacman();
     BOT = new bot();
     BOT2 = new bot();
     BOT3 = new bot();
@@ -88,7 +91,7 @@ int main(int argc, char *args[])
     //While application is running
     while (!quit)
     {
-        //Handle events on queue
+        //Going to the Main Menu
         while(!gameRunning && !quit && !gameServer && !gameClient){
             while (SDL_PollEvent(&e) != 0)
             {
@@ -106,14 +109,14 @@ int main(int argc, char *args[])
                     case SDLK_s:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             make_server();
-                            Pacman->type = 0;
+                            Pacman = new pacman(0);
                             gameServer = true;
                         }
                         break;
                     case SDLK_c:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             make_client();
-                            Pacman->type =1;
+                            Pacman = new pacman(1);
                             gameClient = true;
                         }
                         break;
@@ -122,9 +125,11 @@ int main(int argc, char *args[])
                         break;
 
                     case SDLK_F1:
-                        if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU])
+                        if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU]){
                             //gameCurrentTexture = gameKeyPressTextures[KEY_1P];
                             gameRunning=true;
+                            Pacman = new pacman(0);
+                        }
                         else
                         {
                             // TODO: We can pop-up a message like, Are you sure you want to exit?
@@ -171,6 +176,7 @@ int main(int argc, char *args[])
                     KeyPress_start pos = check_position(x, y);
                     if(e.button.button == SDL_BUTTON_LEFT && pos==1){
                         gameRunning=true;
+                        Pacman = new pacman(0);
                     }
                     else if (e.button.button == SDL_BUTTON_LEFT)
                         gameCurrentTexture = gameKeyPressTextures[pos];
@@ -194,31 +200,88 @@ int main(int argc, char *args[])
             while( SDL_PollEvent( &e ) != 0 )
             {
                 //User requests quit
-                if( e.type == SDL_QUIT )
+                if( e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 {
                     gameRunning = false;
                     quit = true;
                 }
                 handleEvent(&e);
             }
+
+            // different game winning/losing condiitons
+            if (eggsComplete){
+                cout <<"Pacman won the game\n";
+                gameRunning = false;
+                quit = true;
+            }
+            if (pacmanLives<=0){
+                cout <<"Zombies won the game\n";
+                gameRunning = false;
+                quit = true;
+            }
+            if (!BOT_alive && !BOT2_alive && !BOT3_alive){
+                cout <<"Pacman Won the game\n";
+                gameRunning = false;
+                quit = true;
+            }
+
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
-            SDL_RenderClear( gameRenderer );				
+            SDL_RenderClear( gameRenderer );	
+
+            // Moving the Pacman			
             updateScreen(gPacmanTexture);				
+            eggsComplete = (Pacman->eggsEaten == eggs);
             
-            BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
-            BOT->updateAngle();
-            pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
-            BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
-            BOT2->updateAngle();
-            pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
-            BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
-            BOT3->updateAngle();	
-            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
-            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
-            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
-            Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
-            Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
-            Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
+            // Handling the bots
+            if (BOT_alive){
+                BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+                BOT->updateAngle();
+                int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+                if (x==2){
+                    BOT_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
+            }
+            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+                
+            if (BOT2_alive){
+                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
+                BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
+                BOT2->updateAngle();
+                int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+                if (x==2){
+                    BOT2_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
+            }
+            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+                
+            if (BOT3_alive){
+                pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
+                BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
+                BOT3->updateAngle();
+                int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+                if (x==2){
+                    BOT3_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
+            }
+            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
 
             SDL_RenderPresent( gameRenderer );	
             frameTime = SDL_GetTicks()-frameStart;
@@ -227,14 +290,14 @@ int main(int argc, char *args[])
             }
         }
 
-        // When running in Double player
-        while (gameServer || gameClient){
+        // When running the game as server
+        while (gameServer){
             frameStart = SDL_GetTicks();
             //Handle events on queue
             while( SDL_PollEvent( &e ) != 0 )
             {
                 //User requests quit
-                if( e.type == SDL_QUIT )
+                if( e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 {
                     gameServer = false;
                     gameClient = false;
@@ -243,74 +306,229 @@ int main(int argc, char *args[])
                 }
                 handleEvent(&e);
             }
+
+            // Different wining/losing conditions
+            if (eggsComplete){
+                // information regarding this needs to be sent
+                cout <<"Pacman won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
+            if (pacmanLives<=0){
+                cout <<"Zombies won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
+            if (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive){
+                cout <<"Pacman won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
             SDL_RenderClear( gameRenderer );
 
-            if (gameServer){
-                updateScreen(gPacmanTexture);
-                // getting the position of Enenmy and rendering it
-                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
-                // cout <<"Position of the client recieved\n";
-                tuple<int, int, int, int, int> enemyPos = buffer_to_pos(); 
-                frender(gZombieTexture, enemyPos);
-                Pacman->checkCollision(enemyPos);
+            // Moving the pacman
+            updateScreen(gPacmanTexture);
+            eggsComplete = (Pacman->eggsEaten == eggs);
 
-                // Sending our position to the client
-                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col});
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
-                maze_to_buffer();
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
-                // cout <<"Position was sent to the client\n";
+            // Sending the maze data
+            maze_to_buffer();
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
 
+            // getting the position of Enenmy and rendering it
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+            tuple<int, int, int, int, int, int, int> enemyPos = buffer_to_pos(); 
+            zombie_alive = get<5>(enemyPos);
+            frender(gZombieTexture, enemyPos);
+            if (zombie_alive){
+                int x =Pacman->checkCollision(enemyPos);
+                if (x==2){
+                    zombie_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
+            }
+            buffer[0] = '0'+ zombie_alive;
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+
+            // Handling the bots
+            if (BOT_alive){
                 BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
                 BOT->updateAngle();
-                frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
-                pos_to_buffer({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
-                Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col});
-
-                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, get<3>(enemyPos), get<4>(enemyPos)); //this way it will assist the enemy
+                int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+                if (x==2){
+                    BOT_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }                
+            }
+            pos_to_buffer({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+            BOT_alive = buffer[0]-'0';
+            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col,BOT_alive, eggsComplete});
+            
+            if (BOT2_alive){
+                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
                 BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
                 BOT2->updateAngle();
-                frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
-                pos_to_buffer({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
-                Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col});
+                int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+                if (x==2){
+                    BOT2_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
+            }
+            pos_to_buffer({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+            BOT2_alive = buffer[0]-'0';
+            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
 
+            if (BOT3_alive){
                 pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
                 BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
                 BOT3->updateAngle();
-                frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
-                pos_to_buffer({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
-                Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col});
-
+                int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+                if (x==2){
+                    BOT3_alive =0;
+                }
+                else if (x==1){
+                    pacmanLives--;
+                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
+                    Pacman->x = Pacman->cellWidth;
+                    Pacman->y = Pacman->cellHeight; 
+                }
             }
-            else if (gameClient){
-                updateScreen(gZombieTexture);
-                // Sending our position to the server
-                pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col});
-                sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
-                // cout <<"Client position was sent to the server\n";
+            pos_to_buffer({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+            BOT3_alive = buffer[0]-'0';
+            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
 
-                // getting the position of server and rendering it
-                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-                // cout <<"Server position received\n";
-                frender(gPacmanTexture, buffer_to_pos());
-                recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-                //cout <<"Map information recieved\n";
-                change_maze(); 
+            // Sending our position to the client
+            pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col, pacmanLives, eggsComplete});
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
 
-                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-                frender(gZombieTexture, buffer_to_pos());
-
-                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-                frender(gZombieTexture, buffer_to_pos());
-
-                recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-                frender(gZombieTexture, buffer_to_pos());
-                
+            SDL_RenderPresent( gameRenderer );
+            frameTime = SDL_GetTicks()-frameStart;
+            if(delay>frameTime){
+                SDL_Delay(delay - frameTime);
             }
+        }
+        
+        // When running the game as client
+        while (gameClient){
+            frameStart = SDL_GetTicks();
+            //Handle events on queue
+            while( SDL_PollEvent( &e ) != 0 )
+            {
+                //User requests quit
+                if( e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
+                {
+                    gameServer = false;
+                    gameClient = false;
+                    quit = true;
+                    close(sockfd);
+                }
+                if (zombie_alive) handleEvent(&e);  // if not alive we don't need to take care of it
+            }
+
+            // Different winning/losing conditons
+            if (eggsComplete){
+                // information regarding this needs to be sent
+                cout <<"Pacman won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
+            if (pacmanLives<=0){
+                cout <<"Zombies won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
+            if (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive){
+                cout <<"Pacman won the game\n";
+                gameServer = false;
+                gameClient = false;
+                quit = true;
+            }
+            SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_RenderClear( gameRenderer );
+
+            // Moving the Monster (if was alive)
+            updateScreen(gZombieTexture);
+
+            // Changing the eaten eggs and vaccine info
+            recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            change_maze();
+
+            // Sending our position to the server
+            pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col, zombie_alive, 0});
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            zombie_alive = buffer[0]-'0';   // TO know if the Pacman killed us, effect will be visible in the next iteration or both the Server and client
+
+            // Handling the bots
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            tuple<int, int, int, int, int, int, int> Botpos = buffer_to_pos();
+            BOT_alive = get<5>(Botpos);
+            if (!BOT_alive){
+                int x= Pacman->checkCollision(Botpos);
+                if (x !=0) BOT_alive = 1;
+            }
+            buffer[0] = '0'+BOT_alive;
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+            get<5>(Botpos) = BOT_alive;
+            frender(gZombieTexture, Botpos );
+
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            Botpos = buffer_to_pos();
+            BOT2_alive = get<5>(Botpos);
+            if (!BOT2_alive){
+                int x= Pacman->checkCollision(Botpos);
+                if (x !=0) BOT2_alive = 1;
+            }
+            buffer[0] = '0'+BOT2_alive;
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+            get<5>(Botpos) = BOT2_alive;
+            frender(gZombieTexture, Botpos );
+
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            Botpos = buffer_to_pos();
+            BOT3_alive = get<5>(Botpos);
+            if (!BOT3_alive){
+                int x= Pacman->checkCollision(Botpos);
+                if (x !=0) BOT3_alive = 1;
+            }
+            buffer[0] = '0'+BOT3_alive;
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+            get<5>(Botpos) = BOT3_alive;
+            frender(gZombieTexture, Botpos );
+
+            // getting the position of server and rendering it
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            tuple<int, int, int, int, int, int, int> PacmanPos = buffer_to_pos();
+            pacmanLives = get<5>(PacmanPos);
+            eggsComplete = get<6>(PacmanPos);
+            frender(gPacmanTexture, PacmanPos);
 
             SDL_RenderPresent( gameRenderer );
             frameTime = SDL_GetTicks()-frameStart;

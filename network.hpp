@@ -23,8 +23,8 @@ socklen_t c_len, s_len;
 
 void maze_to_buffer();
 void change_maze();
-void pos_to_buffer(tuple<int, int, int, int, int> p );
-tuple <int,int,int,int,int> buffer_to_pos();
+void pos_to_buffer(tuple<int, int, int, int, int, int, int> p );
+tuple <int,int,int,int,int, int, int> buffer_to_pos();
 void make_server();
 void make_client();
 
@@ -46,7 +46,8 @@ void change_maze(){
     }
 }
 
-void pos_to_buffer(tuple<int, int, int, int, int> p ){
+// {x, y, angle, row, col, lives/alive, eggs done?}
+void pos_to_buffer(tuple<int, int, int, int, int, int, int> p ){
     string out = to_string(get<0>(p));  // x coordinate
     int n = out.size();
     for (int i=n;i<4;i++){
@@ -87,9 +88,12 @@ void pos_to_buffer(tuple<int, int, int, int, int> p ){
     for (int i=16;i<=19;i++){
         buffer[i] = out[i-16];
     }
+    buffer[20] = get<5>(p)+'0'; // 0 if dead, 1 if alive
+    buffer[21] = get<6>(p)+'0'; // 1 if all the eggs are eaten
 }
 
-tuple <int,int,int,int,int> buffer_to_pos(){
+// {x, y, angle, row, col, lives/alive, eggs done?}
+tuple <int,int,int,int,int, int, int> buffer_to_pos(){
     int x=0;
     int y=0;
     int angle=0;
@@ -110,7 +114,9 @@ tuple <int,int,int,int,int> buffer_to_pos(){
     for (int i=19;i>=16;i--){
         col += (buffer[i]-'0')*pow(10, 19-i);
     }
-    return {x,y, angle, row, col};
+    int alive = buffer[20]-'0';
+    int eggs = buffer[21]-'0';
+    return {x,y, angle, row, col, alive, eggs};
 }
 
 void make_server(){

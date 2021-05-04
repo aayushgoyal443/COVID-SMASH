@@ -9,7 +9,7 @@ const int width = 29;
 
 int maze[height][width]={};  //1 for wall, 0 for empty, 2 for egg, 3 for vaccine
 int visit[height][width]={};
-
+int eggs;
 
 int nr=0,nc=0;
 
@@ -107,10 +107,14 @@ void middleWall(){
 void fillEggs(){
     for(int i=0;i<height;i++){
         for(int j=0;j<width;j++){
-            if(maze[i][j]==0)maze[i][j]=2;
+            if(maze[i][j]==0){
+                maze[i][j]=2;
+                eggs++;
+            }
         }
     }
     maze[1][1]=0;
+    eggs--;
 }
 
 
@@ -126,6 +130,7 @@ void putVaccine(){
     while(j<posVacc.size()){
         maze[posVacc[j].first][posVacc[j].second] = 3;
         j+=gap;
+        eggs--;
     }
 }
 

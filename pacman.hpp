@@ -6,15 +6,14 @@
 #include <stdlib.h>
 #include <time.h>
 
-
-
+#define POWER_TIME 300
 
 class pacman{
 public:
     static SDL_Renderer* Renderer;
-    pacman();
+    pacman(int n);
     void HandleEvent(SDL_Event* event);
-    void checkCollision(tuple<int,int,int,int,int> posMonster);
+    int checkCollision(tuple<int,int,int,int,int,int,int> posMonster);
     void update();
     int updateAngle();
     bool tryChanging();
@@ -37,10 +36,17 @@ public:
     int angle=0;    
 };
 
-pacman::pacman(){
-    row = nxtRow = col = nxtCol = 1;
-    x = cellWidth;
-    y = cellHeight; 
+pacman::pacman(int n){
+    type = n;
+    if (type ==0){
+        row = nxtRow = col = nxtCol = 1;
+        x = cellWidth;
+        y = cellHeight; 
+    }
+    else{   // Monster has to be kept at the opposite side of Maze
+        row = col = 27;
+        x = y = row*cellWidth;
+    }
 }
 
 void pacman::HandleEvent(SDL_Event* event){
@@ -57,17 +63,24 @@ void pacman::HandleEvent(SDL_Event* event){
     
 }
 
-void pacman::checkCollision(tuple<int,int,int,int,int> posMonster){
+int pacman::checkCollision(tuple<int,int,int,int,int,int,int> posMonster){
     int rowMonster = get<3>(posMonster);
     int colMonster = get<4>(posMonster);
-    if(colMonster == col && rowMonster==row){
+    int xMonster = get<0>(posMonster);
+    int yMonster = get<1>(posMonster); 
+    if(abs(xMonster- x)<=5 && abs(yMonster- y)<=5){
         if(powerful){
             cout<<"Monster Killed\n";
+            SDL_Delay(1000);
+            return 2;
         }
         else{
             cout<<"Pacman Killed\n";
-        }
+            SDL_Delay(2000);
+            return 1;
+        }        
     }
+    return 0;   // when nothing happens
 }
 
 bool pacman::tryChanging(){
@@ -87,7 +100,7 @@ bool pacman::tryChanging(){
             }
             else if(maze[row][col]==3 && type ==0){
                 maze[row][col]=0;
-                powerTime = 150;
+                powerTime = POWER_TIME;
             }
         }
         trow = row;
@@ -104,7 +117,7 @@ bool pacman::tryChanging(){
             }
             else if(maze[row][col]==3 && type ==0){
                 maze[row][col]=0;
-                powerTime = 150;
+                powerTime = POWER_TIME;
             }
         }
         trow = row;
@@ -123,7 +136,7 @@ bool pacman::tryChanging(){
             }
             else if(maze[row][col]==3 && type ==0){
                 maze[row][col]=0;
-                powerTime = 150;
+                powerTime = POWER_TIME;
             }
         }
         trow = row-1;
@@ -141,7 +154,7 @@ bool pacman::tryChanging(){
             }
             else if(maze[row][col]==3 && type ==0){
                 maze[row][col]=0;
-                powerTime = 150;
+                powerTime = POWER_TIME;
             }
         }
         trow = row+1;
@@ -171,7 +184,7 @@ void pacman::keepMoving(){
                 }
                 else if(maze[row][col]==3 && type ==0){
                     maze[row][col]=0;
-                    powerTime = 150;
+                    powerTime = POWER_TIME;
                 }
 		    }
             if(maze[row][col-1]==1){
@@ -196,7 +209,7 @@ void pacman::keepMoving(){
                 }
                 else if(maze[row][col]==3 && type ==0){
                     maze[row][col]=0;
-                    powerTime = 150;
+                    powerTime = POWER_TIME;
                 }
 		    }
             if(maze[row][col+1]==1){
@@ -221,7 +234,7 @@ void pacman::keepMoving(){
                 }
                 else if(maze[row][col]==3 && type ==0){
                     maze[row][col]=0;
-                    powerTime = 150;
+                    powerTime = POWER_TIME;
                 }
 		    }
             if(maze[row-1][col]==1){
@@ -246,7 +259,7 @@ void pacman::keepMoving(){
                 }
                 else if(maze[row][col]==3 && type ==0){
                     maze[row][col]=0;
-                    powerTime = 150;
+                    powerTime = POWER_TIME;
                 }
 		    }
             if(maze[row+1][col]==1){

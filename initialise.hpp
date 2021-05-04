@@ -26,6 +26,12 @@ enum KeyPress_start
     KEY_TOTAL
 };
 
+int BOT_alive=1;
+int BOT2_alive =1;
+int BOT3_alive=2;
+int zombie_alive=1;
+int pacmanLives =5;
+int eggsComplete = 0;
 
 
 //Starts up SDL and creates window
@@ -58,6 +64,7 @@ SDL_Texture* gPacmanTexture = NULL;
 SDL_Texture* gZombieTexture = NULL;
 SDL_Texture* eggTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
+SDL_Texture* deadZombieTexture =NULL;
 
 pacman* Pacman = NULL;
 bot* BOT = NULL;    // this will directly chase the Pacman 
@@ -224,6 +231,13 @@ bool loadMedia()
     if (gZombieTexture == NULL)
     {
         printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
+    deadZombieTexture = loadTexture("Resources/dead_zombie.png");
+    if (deadZombieTexture == NULL)
+    {
+        printf("Failed to load Dead Zombie image!\n");
         success = false;
     }
 
