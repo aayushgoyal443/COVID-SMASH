@@ -182,8 +182,19 @@ void breakSomeWalls(){
     maze[height-2][width-2] = 0;
 }
 
+
+void clearMaze(){
+    for(int i=0;i<height;i++){
+        for(int j=0;j<width;j++){
+            maze[i][j]=0;
+            visit[i][j]=0;
+        }
+    }
+}
+
 void formMaze(){
     srand(time(0));
+    clearMaze();
     initMaze();
     dfsMaze(1,1);
     mirror();

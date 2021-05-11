@@ -10,6 +10,8 @@
 
 using namespace std;
 
+
+
 void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
     SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
     if (texture == gZombieTexture && get<5>(pos)==0) texture= deadZombieTexture;
@@ -53,13 +55,26 @@ void handleEvent(SDL_Event* event){
 }
 
 
+void goBackToMenu(){
+    cout<< "sss"<<endl;
+    gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
+    //Clear screen
+    SDL_RenderClear(gameRenderer);
+
+    //Render texture to screen
+    SDL_RenderCopy(gameRenderer, gameCurrentTexture, NULL, NULL);
+
+    //Update screen
+    SDL_RenderPresent(gameRenderer);
+}
+
 int main(int argc, char *args[])
 {
     //Start up SDL and create window
-    formMaze();
-    BOT = new bot();
-    BOT2 = new bot();
-    BOT3 = new bot();
+    // formMaze();
+    // BOT = new bot();
+    // BOT2 = new bot();
+    // BOT3 = new bot();
     const int FPS = 40;
     const int delay = 1000/FPS;
     
@@ -87,6 +102,52 @@ int main(int argc, char *args[])
 
     //Set default current texture
     gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
+    const SDL_MessageBoxButtonData buttons[] = {
+        { /* .flags, .buttonid, .text */        0, 0, "NO" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "YES" },
+        //{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+    };
+
+    const SDL_MessageBoxButtonData leaveButtons[] = {
+        //{ /* .flags, .buttonid, .text */        0, 0, "NO" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "OK" },
+        //{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+    };
+
+
+    const SDL_MessageBoxColorScheme colorScheme = {
+        { /* .colors (.r, .g, .b) */
+            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
+            { 0,   0,   0 },
+            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
+            {   0, 255,   0 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
+            { 255, 255,   0 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
+            {   0,   0, 255 },
+            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
+            { 255,   0, 255 }
+        }
+    };
+    const SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+        gameWindow, /* .window */
+        "WARNING", /* .title */
+        "Are you sure you want to quit? All your progress will be lost", /* .message */
+        SDL_arraysize(buttons), /* .numbuttons */
+        buttons, /* .buttons */
+        &colorScheme /* .colorScheme */
+    };
+
+    const SDL_MessageBoxData messageboxLeave = {
+        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+        gameWindow, /* .window */
+        "OOPS...", /* .title */
+        "The other player has left the game", /* .message */
+        SDL_arraysize(leaveButtons), /* .numbuttons */
+        leaveButtons, /* .buttons */
+        &colorScheme /* .colorScheme */
+    };
 
     //While application is running
     while (!quit)
@@ -108,6 +169,11 @@ int main(int argc, char *args[])
                     {
                     case SDLK_s:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
+                            cout<<"hello"<<endl;
+                            formMaze();
+                            BOT = new bot();
+                            BOT2 = new bot();
+                            BOT3 = new bot();
                             make_server();
                             Pacman = new pacman(0);
                             gameServer = true;
@@ -115,6 +181,10 @@ int main(int argc, char *args[])
                         break;
                     case SDLK_c:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
+                            formMaze();
+                            BOT = new bot();
+                            BOT2 = new bot();
+                            BOT3 = new bot();
                             make_client();
                             Pacman = new pacman(1);
                             gameClient = true;
@@ -127,7 +197,12 @@ int main(int argc, char *args[])
                     case SDLK_F1:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU]){
                             //gameCurrentTexture = gameKeyPressTextures[KEY_1P];
+                            cout<<"hello"<<endl;
                             gameRunning=true;
+                            formMaze();
+                            BOT = new bot();
+                            BOT2 = new bot();
+                            BOT3 = new bot();
                             Pacman = new pacman(0);
                         }
                         else
@@ -176,6 +251,10 @@ int main(int argc, char *args[])
                     KeyPress_start pos = check_position(x, y);
                     if(e.button.button == SDL_BUTTON_LEFT && pos==1){
                         gameRunning=true;
+                        formMaze();
+                        BOT = new bot();
+                        BOT2 = new bot();
+                        BOT3 = new bot();
                         Pacman = new pacman(0);
                     }
                     else if (e.button.button == SDL_BUTTON_LEFT)
@@ -205,6 +284,23 @@ int main(int argc, char *args[])
                     gameRunning = false;
                     quit = true;
                 }
+                else if(e.type == SDL_KEYDOWN && e.key.keysym.sym==SDLK_q){
+                    //cout<<"yes"<<endl;
+                	int buttonid;
+			        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+				        SDL_Log("error displaying message box");
+				        return 1;
+			        }
+			        if (buttonid == -1 || buttonid == 0) {
+				        cout<<"no selection"<<endl;
+			        } 
+                    else {
+				        cout<<"selection was "<< buttons[buttonid].text<<endl;
+                        gameRunning = false;
+                        goBackToMenu();
+                        break;
+			        }
+                }
                 handleEvent(&e);
             }
 
@@ -212,17 +308,20 @@ int main(int argc, char *args[])
             if (eggsComplete){
                 cout <<"Pacman won the game\n";
                 gameRunning = false;
-                quit = true;
+                goBackToMenu();
+                break;
             }
             if (pacmanLives<=0){
                 cout <<"Zombies won the game\n";
                 gameRunning = false;
-                quit = true;
+                goBackToMenu();
+                break;
             }
             if (!BOT_alive && !BOT2_alive && !BOT3_alive){
                 cout <<"Pacman Won the game\n";
                 gameRunning = false;
-                quit = true;
+                goBackToMenu();
+                break;
             }
 
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
@@ -292,19 +391,61 @@ int main(int argc, char *args[])
 
         // When running the game as server
         while (gameServer){
+            int leave = 0;
             frameStart = SDL_GetTicks();
             //Handle events on queue
             while( SDL_PollEvent( &e ) != 0 )
             {
                 //User requests quit
+                
                 if( e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 {
-                    gameServer = false;
-                    gameClient = false;
+                    leave = 1;
                     quit = true;
-                    close(sockfd);
+                }
+                else if(e.type == SDL_KEYDOWN && e.key.keysym.sym==SDLK_q){
+                    //cout<<"yes"<<endl;
+                	int buttonid;
+			        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+				        SDL_Log("error displaying message box");
+				        return 1;
+			        }
+			        if (buttonid == -1 || buttonid == 0) {
+				        cout<<"no selection"<<endl;
+			        } 
+                    else {
+				        cout<<"selection was "<< leaveButtons[buttonid].text<<endl;
+                        // goBackToMenu();
+                        leave = 1;
+			        }
                 }
                 handleEvent(&e);
+            }
+
+            leave_to_buffer(leave);
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
+            int flag = 0;
+
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
+            flag = buffer_to_leave();
+
+            if(leave == 1){
+                gameServer = false;
+                goBackToMenu();
+                close(sockfd);
+                break;
+            }
+            if(flag == 1){
+                int buttonid;
+                if (SDL_ShowMessageBox(&messageboxLeave, &buttonid) < 0) {
+                    SDL_Log("error displaying message box");
+                    return 1;
+                }
+                gameServer = false;
+                
+                goBackToMenu();
+                close(sockfd);
+                break;    
             }
 
             // Different wining/losing conditions
@@ -434,6 +575,7 @@ int main(int argc, char *args[])
         
         // When running the game as client
         while (gameClient){
+            int leave = 0;
             frameStart = SDL_GetTicks();
             //Handle events on queue
             while( SDL_PollEvent( &e ) != 0 )
@@ -441,12 +583,50 @@ int main(int argc, char *args[])
                 //User requests quit
                 if( e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE))
                 {
-                    gameServer = false;
-                    gameClient = false;
                     quit = true;
-                    close(sockfd);
+                    leave = 1;
+                }
+                else if(e.type == SDL_KEYDOWN && e.key.keysym.sym==SDLK_q){
+                    //cout<<"yes"<<endl;
+                	int buttonid;
+			        if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+				        SDL_Log("error displaying message box");
+				        return 1;
+			        }
+			        if (buttonid == -1 || buttonid == 0) {
+				        cout<<"no selection"<<endl;
+			        } 
+                    else {
+				        cout<<"selection was "<< buttons[buttonid].text<<endl;
+                        // goBackToMenu();
+                        leave = 1;
+			        }
                 }
                 if (zombie_alive) handleEvent(&e);  // if not alive we don't need to take care of it
+            }
+            int flag = 0;
+            recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            flag = buffer_to_leave();
+
+            leave_to_buffer(leave);
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
+
+            if(leave == 1){
+                gameClient = false;
+                goBackToMenu();
+                close(sockfd);
+                break;
+            }
+            if(flag == 1){
+                gameClient = false;
+                int buttonid;
+                if (SDL_ShowMessageBox(&messageboxLeave, &buttonid) < 0) {
+                    SDL_Log("error displaying message box");
+                    return 1;
+                }       
+                goBackToMenu();
+                close(sockfd);
+                break;    
             }
 
             // Different winning/losing conditons

@@ -30,6 +30,17 @@ void make_client();
 
 /******************* Function definitions **********************/
 
+void leave_to_buffer(int leave){
+    for (int i=0;i<22;i++){
+        buffer[i] = '0'+ leave;
+    }
+}
+
+int buffer_to_leave(){
+    if(buffer[0]=='1')return 1;
+    else return 0;
+}
+
 void maze_to_buffer(){
     for (int i=0;i<29;i++){
         for (int j=0;j<29;j++){

@@ -72,6 +72,10 @@ bot* BOT2 = NULL;   // this will directly chase the Pacman from 180 degree behin
 bot* BOT3 = NULL;   // this will chase the pacman from Front, 4 rows change scheme.
 
 
+
+
+
+
 KeyPress_start check_position(int x, int y)
 {
     int x_start = 241;
