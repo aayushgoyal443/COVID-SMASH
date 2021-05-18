@@ -176,6 +176,12 @@ int main(int argc, char *args[])
                             BOT3 = new bot();
                             make_server();
                             Pacman = new pacman(0);
+                            BOT_alive=1;
+                            BOT2_alive =1;
+                            BOT3_alive=2;
+                            zombie_alive=1;
+                            pacmanLives =5;
+                            eggsComplete = 0;
                             gameServer = true;
                         }
                         break;
@@ -187,6 +193,12 @@ int main(int argc, char *args[])
                             BOT3 = new bot();
                             make_client();
                             Pacman = new pacman(1);
+                            BOT_alive=1;
+                            BOT2_alive =1;
+                            BOT3_alive=2;
+                            zombie_alive=1;
+                            pacmanLives =5;
+                            eggsComplete = 0;
                             gameClient = true;
                         }
                         break;
@@ -204,6 +216,12 @@ int main(int argc, char *args[])
                             BOT2 = new bot();
                             BOT3 = new bot();
                             Pacman = new pacman(0);
+                            BOT_alive=1;
+                            BOT2_alive =1;
+                            BOT3_alive=2;
+                            zombie_alive=1;
+                            pacmanLives =5;
+                            eggsComplete = 0;
                         }
                         else
                         {
@@ -256,6 +274,12 @@ int main(int argc, char *args[])
                         BOT2 = new bot();
                         BOT3 = new bot();
                         Pacman = new pacman(0);
+                        BOT_alive=1;
+                        BOT2_alive =1;
+                        BOT3_alive=2;
+                        zombie_alive=1;
+                        pacmanLives =5;
+                        eggsComplete = 0;
                     }
                     else if (e.button.button == SDL_BUTTON_LEFT)
                         gameCurrentTexture = gameKeyPressTextures[pos];
@@ -303,7 +327,9 @@ int main(int argc, char *args[])
                 }
                 handleEvent(&e);
             }
-
+            if(gameRunning == false){
+                cout<< "shit"<<endl;
+            }
             // different game winning/losing condiitons
             if (eggsComplete){
                 cout <<"Pacman won the game\n";

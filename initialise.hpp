@@ -11,7 +11,7 @@ using namespace std;
 bool gameRunning = false;
 bool gameServer = false;
 bool gameClient  = false;
-const int SCREEN_WIDTH = 720*1.5;
+const int SCREEN_WIDTH = 696;  //696
 const int SCREEN_HEIGHT = 540*1.5;
 const int cellHeight =24;
 const int cellWidth = 24;
