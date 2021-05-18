@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include "maze.hpp"
 #include "pacman.hpp"
 #include "bot.hpp"
@@ -58,23 +59,30 @@ void handleEvent(SDL_Event* event){
 void goBackToMenu(){
     cout<< "sss"<<endl;
     gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
-    //Clear screen
     SDL_RenderClear(gameRenderer);
-
-    //Render texture to screen
     SDL_RenderCopy(gameRenderer, gameCurrentTexture, NULL, NULL);
-
-    //Update screen
     SDL_RenderPresent(gameRenderer);
+}
+
+void createNewGame(int type){
+    BOT = new bot();
+    BOT2 = new bot();
+    BOT3 = new bot();
+    Pacman = new pacman(type);
+    BOT_alive=1;
+    BOT2_alive =1;
+    BOT3_alive=2;
+    zombie_alive=1;
+    pacmanLives =5;
+    eggsComplete = 0;
 }
 
 int main(int argc, char *args[])
 {
-    //Start up SDL and create window
-    // formMaze();
-    // BOT = new bot();
-    // BOT2 = new bot();
-    // BOT3 = new bot();
+    Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
+    effect1 = Mix_LoadWAV("Resources/pacman_beginning.wav");
+    effect2 = Mix_LoadWAV("Resources/pacman_death.wav");
+    effect3 = Mix_LoadWAV("Resources/pacman_eatfruit.wav");
     const int FPS = 40;
     const int delay = 1000/FPS;
     
@@ -105,28 +113,16 @@ int main(int argc, char *args[])
     const SDL_MessageBoxButtonData buttons[] = {
         { /* .flags, .buttonid, .text */        0, 0, "NO" },
         { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "YES" },
-        //{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
     };
 
     const SDL_MessageBoxButtonData leaveButtons[] = {
-        //{ /* .flags, .buttonid, .text */        0, 0, "NO" },
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "OK" },
-        //{ SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 2, "cancel" },
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "OK" },      
     };
 
 
     const SDL_MessageBoxColorScheme colorScheme = {
-        { /* .colors (.r, .g, .b) */
-            /* [SDL_MESSAGEBOX_COLOR_BACKGROUND] */
-            { 0,   0,   0 },
-            /* [SDL_MESSAGEBOX_COLOR_TEXT] */
-            {   0, 255,   0 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BORDER] */
-            { 255, 255,   0 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND] */
-            {   0,   0, 255 },
-            /* [SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED] */
-            { 255,   0, 255 }
+        {
+            { 0,   0,   0 }, {   0, 255,   0 }, { 255, 255,   0 }, {   0,   0, 255 }, { 255,   0, 255 }
         }
     };
     const SDL_MessageBoxData messageboxdata = {
@@ -171,34 +167,16 @@ int main(int argc, char *args[])
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             cout<<"hello"<<endl;
                             formMaze();
-                            BOT = new bot();
-                            BOT2 = new bot();
-                            BOT3 = new bot();
                             make_server();
-                            Pacman = new pacman(0);
-                            BOT_alive=1;
-                            BOT2_alive =1;
-                            BOT3_alive=2;
-                            zombie_alive=1;
-                            pacmanLives =5;
-                            eggsComplete = 0;
+                            createNewGame(0);
                             gameServer = true;
                         }
                         break;
                     case SDLK_c:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             formMaze();
-                            BOT = new bot();
-                            BOT2 = new bot();
-                            BOT3 = new bot();
                             make_client();
-                            Pacman = new pacman(1);
-                            BOT_alive=1;
-                            BOT2_alive =1;
-                            BOT3_alive=2;
-                            zombie_alive=1;
-                            pacmanLives =5;
-                            eggsComplete = 0;
+                            createNewGame(1);
                             gameClient = true;
                         }
                         break;
@@ -212,16 +190,8 @@ int main(int argc, char *args[])
                             cout<<"hello"<<endl;
                             gameRunning=true;
                             formMaze();
-                            BOT = new bot();
-                            BOT2 = new bot();
-                            BOT3 = new bot();
-                            Pacman = new pacman(0);
-                            BOT_alive=1;
-                            BOT2_alive =1;
-                            BOT3_alive=2;
-                            zombie_alive=1;
-                            pacmanLives =5;
-                            eggsComplete = 0;
+                            createNewGame(0);
+                            Mix_PlayChannel(-1, effect1, 0);
                         }
                         else
                         {
@@ -270,16 +240,8 @@ int main(int argc, char *args[])
                     if(e.button.button == SDL_BUTTON_LEFT && pos==1){
                         gameRunning=true;
                         formMaze();
-                        BOT = new bot();
-                        BOT2 = new bot();
-                        BOT3 = new bot();
-                        Pacman = new pacman(0);
-                        BOT_alive=1;
-                        BOT2_alive =1;
-                        BOT3_alive=2;
-                        zombie_alive=1;
-                        pacmanLives =5;
-                        eggsComplete = 0;
+                        createNewGame(0);
+                        Mix_PlayChannel(-1, effect1, 0);
                     }
                     else if (e.button.button == SDL_BUTTON_LEFT)
                         gameCurrentTexture = gameKeyPressTextures[pos];
@@ -298,6 +260,7 @@ int main(int argc, char *args[])
 
         // While running in Single player
         while(gameRunning){
+            
             frameStart = SDL_GetTicks();
             //Handle events on queue
             while( SDL_PollEvent( &e ) != 0 )
@@ -364,12 +327,14 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 if (x==2){
                     BOT_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
             }
             frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
@@ -381,12 +346,14 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 if (x==2){
                     BOT2_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
             }
             frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
@@ -398,16 +365,20 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
                 if (x==2){
                     BOT3_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
             }
             frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
-
+            if(Pacman->powerTime == 300){
+                Mix_PlayChannel(-1, effect3, 0);
+            }
             SDL_RenderPresent( gameRenderer );	
             frameTime = SDL_GetTicks()-frameStart;
             if(delay>frameTime){
@@ -514,12 +485,15 @@ int main(int argc, char *args[])
                 int x =Pacman->checkCollision(enemyPos);
                 if (x==2){
                     zombie_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
             }
             buffer[0] = '0'+ zombie_alive;
@@ -532,12 +506,16 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 if (x==2){
                     BOT_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }                
             }
             pos_to_buffer({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
@@ -553,12 +531,16 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 if (x==2){
                     BOT2_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
             }
             pos_to_buffer({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
@@ -574,12 +556,16 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
                 if (x==2){
                     BOT3_alive =0;
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
                 else if (x==1){
                     pacmanLives--;
                     Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
+                    Mix_PlayChannel(-1, effect2, 0);
+
                 }
             }
             pos_to_buffer({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
@@ -712,7 +698,7 @@ int main(int argc, char *args[])
                 int x= Pacman->checkCollision(Botpos);
                 if (x !=0) BOT2_alive = 1;
             }
-            buffer[0] = '0'+BOT2_alive;
+            buffer[0] = '0' + BOT2_alive;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
             get<5>(Botpos) = BOT2_alive;
             frender(gZombieTexture, Botpos );
@@ -721,8 +707,8 @@ int main(int argc, char *args[])
             Botpos = buffer_to_pos();
             BOT3_alive = get<5>(Botpos);
             if (!BOT3_alive){
-                int x= Pacman->checkCollision(Botpos);
-                if (x !=0) BOT3_alive = 1;
+                int x = Pacman->checkCollision(Botpos);
+                if (x != 0) BOT3_alive = 1;
             }
             buffer[0] = '0'+BOT3_alive;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
@@ -746,6 +732,10 @@ int main(int argc, char *args[])
 
     //Free resources and close SDL
     close();
+    Mix_FreeChunk(effect1);
+    Mix_FreeChunk(effect2);
+    Mix_FreeChunk(effect3);
+    Mix_CloseAudio();
 
     return 0;
 }

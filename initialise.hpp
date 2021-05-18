@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 
@@ -71,7 +72,9 @@ bot* BOT = NULL;    // this will directly chase the Pacman
 bot* BOT2 = NULL;   // this will directly chase the Pacman from 180 degree behind
 bot* BOT3 = NULL;   // this will chase the pacman from Front, 4 rows change scheme.
 
-
+Mix_Chunk* effect1;
+Mix_Chunk* effect2;
+Mix_Chunk* effect3;
 
 
 
