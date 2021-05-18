@@ -32,7 +32,7 @@ void updateScreen(SDL_Texture* texture){
 			}
 			else if(maze[i][j]==2){
 				SDL_RenderCopy(gameRenderer, gGrassTexture, NULL, &fillRect);
-                SDL_RenderCopy(gameRenderer, eggTexture, NULL, &fillRect);
+                SDL_RenderCopy(gameRenderer, medicineTexture, NULL, &fillRect);
 			}
             else if(maze[i][j]==3){
 				SDL_RenderCopy(gameRenderer, gGrassTexture, NULL, &fillRect);
@@ -173,7 +173,9 @@ int main(int argc, char *args[])
                         }
                         break;
                     case SDLK_c:
-                        if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
+                        if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU] || gameCurrentTexture == gameKeyPressTextures[KEY_HELP])
+                                gameCurrentTexture = gameKeyPressTextures[KEY_CREDITS];
+                        else if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
                             formMaze();
                             make_client();
                             createNewGame(1);
@@ -193,38 +195,20 @@ int main(int argc, char *args[])
                             createNewGame(0);
                             Mix_PlayChannel(-1, effect1, 0);
                         }
-                        else
-                        {
-                            // TODO: We can pop-up a message like, Are you sure you want to exit?
-                        }
                         break;
 
                     case SDLK_F2:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU])
                             gameCurrentTexture = gameKeyPressTextures[KEY_2P];
-                        else
-                        {
-                            // TODO: We can pop-up a message like, Are you sure you want to exit?
-                        }
                         break;
 
-                    case SDLK_h:
+                    case SDLK_r:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU] || gameCurrentTexture == gameKeyPressTextures[KEY_CREDITS])
                             gameCurrentTexture = gameKeyPressTextures[KEY_HELP];
-                        else
-                        {
-                            // TODO: We can pop-up a message like, Are you sure you want to exit?
-                        }
                         break;
 
                     case SDLK_z:
-                        if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU] || gameCurrentTexture == gameKeyPressTextures[KEY_HELP])
-                            gameCurrentTexture = gameKeyPressTextures[KEY_CREDITS];
-                        else
-                        {
-                            // TODO: We can pop-up a message like, Are you sure you want to exit?
-                        }
-                        break;
+                        
 
                     default:
                         // gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
@@ -318,7 +302,7 @@ int main(int argc, char *args[])
                 break;
             }
 
-            SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_SetRenderDrawColor( gameRenderer, 0x00, 0x00, 0x00, 0xFF );
             SDL_RenderClear( gameRenderer );	
 
             // Moving the Pacman			
@@ -475,7 +459,7 @@ int main(int argc, char *args[])
                 gameServer = false;
                 gameClient = false;
             }
-            SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_SetRenderDrawColor( gameRenderer,  0x00, 0x00, 0x00, 0xFF  );
             SDL_RenderClear( gameRenderer );
 
             // Moving the pacman
@@ -673,7 +657,7 @@ int main(int argc, char *args[])
                 gameServer = false;
                 gameClient = false;
             }
-            SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_SetRenderDrawColor( gameRenderer, 0x00, 0x00, 0x00, 0xFF );
             SDL_RenderClear( gameRenderer );
 
             // Moving the Monster (if was alive)

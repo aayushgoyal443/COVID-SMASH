@@ -63,7 +63,7 @@ SDL_Texture* gWallTexture = NULL;
 SDL_Texture* gGrassTexture = NULL;
 SDL_Texture* gPacmanTexture = NULL;
 SDL_Texture* gZombieTexture = NULL;
-SDL_Texture* eggTexture = NULL;
+SDL_Texture* medicineTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 SDL_Texture* deadZombieTexture =NULL;
 
@@ -81,20 +81,13 @@ Mix_Chunk* effect3;
 
 KeyPress_start check_position(int x, int y)
 {
-    int x_start = 241;
-    int x_width = 237; // width of button is
-    int y_width = 44;
-    int y_single = 171;
-    int y_double = 232;
-    int y_help = 293;
-    int y_credits = 356;
-    x_start *= 1.5;
-    x_width *= 1.5;
-    y_width *= 1.5;
-    y_single *= 1.5;
-    y_double *= 1.5;
-    y_help *= 1.5;
-    y_credits *= 1.5;
+    int x_start = 198;
+    int x_width = 498-198; // width of button is
+    int y_width = 345-297;
+    int y_single = 297;
+    int y_double = 366;
+    int y_help = 537;
+    int y_credits = 449;
 
     if (x >= x_start && x <= (x_start + x_width))
     {
@@ -262,8 +255,8 @@ bool loadMedia()
         success = false;
     }
 
-    eggTexture = loadTexture("Resources/egg.png");
-    if (eggTexture == NULL)
+    medicineTexture = loadTexture("Resources/medicine.png");
+    if (medicineTexture == NULL)
     {
         printf("Failed to load egg image!\n");
         success = false;

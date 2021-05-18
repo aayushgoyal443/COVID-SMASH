@@ -1,0 +1,5 @@
+The game compiles and runs as we want.
+
+The sockets are working correctly on a LAN.
+Mouse inputs are working fine.
+Keyboard inputs are working fine.
