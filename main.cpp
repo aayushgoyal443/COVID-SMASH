@@ -328,6 +328,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -335,6 +336,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
             }
             frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
@@ -347,6 +349,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT2_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -354,6 +357,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
             }
             frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
@@ -366,6 +370,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT3_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -373,6 +378,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
             }
             frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
@@ -486,6 +492,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     zombie_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -493,7 +500,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
             }
             buffer[0] = '0'+ zombie_alive;
@@ -507,7 +514,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -515,7 +522,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }                
             }
             pos_to_buffer({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
@@ -532,7 +539,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT2_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -540,7 +547,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
             }
             pos_to_buffer({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
@@ -557,7 +564,7 @@ int main(int argc, char *args[])
                 if (x==2){
                     BOT3_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
                 else if (x==1){
                     pacmanLives--;
@@ -565,7 +572,7 @@ int main(int argc, char *args[])
                     Pacman->x = Pacman->cellWidth;
                     Pacman->y = Pacman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
-
+                    SDL_Delay(2000);
                 }
             }
             pos_to_buffer({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
