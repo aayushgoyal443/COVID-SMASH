@@ -290,6 +290,11 @@ int main(int argc, char *args[])
                 }
                 handleEvent(&e);
             }
+
+            if(Pacman->powerTime == 300){
+                Mix_PlayChannel(-1, effect3, 0);
+            }
+
             if(gameRunning == false){
                 cout<< "shit"<<endl;
             }
@@ -382,9 +387,7 @@ int main(int argc, char *args[])
                 }
             }
             frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
-            if(Pacman->powerTime == 300){
-                Mix_PlayChannel(-1, effect3, 0);
-            }
+            
             SDL_RenderPresent( gameRenderer );	
             frameTime = SDL_GetTicks()-frameStart;
             if(delay>frameTime){
@@ -425,6 +428,10 @@ int main(int argc, char *args[])
                 handleEvent(&e);
             }
 
+            if(Pacman->powerTime == 300){
+                Mix_PlayChannel(-1, effect3, 0);
+            }
+
             leave_to_buffer(leave);
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
             int flag = 0;
@@ -457,19 +464,16 @@ int main(int argc, char *args[])
                 cout <<"Pacman won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             if (pacmanLives<=0){
                 cout <<"Zombies won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             if (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive){
                 cout <<"Pacman won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
             SDL_RenderClear( gameRenderer );
@@ -590,6 +594,10 @@ int main(int argc, char *args[])
             if(delay>frameTime){
                 SDL_Delay(delay - frameTime);
             }
+            if(gameServer == false){
+                goBackToMenu();
+                close(sockfd);
+            }
         }
         
         // When running the game as client
@@ -654,19 +662,16 @@ int main(int argc, char *args[])
                 cout <<"Pacman won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             if (pacmanLives<=0){
                 cout <<"Zombies won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             if (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive){
                 cout <<"Pacman won the game\n";
                 gameServer = false;
                 gameClient = false;
-                quit = true;
             }
             SDL_SetRenderDrawColor( gameRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
             SDL_RenderClear( gameRenderer );
@@ -733,6 +738,10 @@ int main(int argc, char *args[])
             frameTime = SDL_GetTicks()-frameStart;
             if(delay>frameTime){
                 SDL_Delay(delay - frameTime);
+            }
+            if(gameClient == false){
+                goBackToMenu();
+                close(sockfd);
             }
         }
     }
