@@ -3,7 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
 #include "maze.hpp"
-#include "pacman.hpp"
+#include "docman.hpp"
 #include "bot.hpp"
 #include "initialise.hpp"
 #include "network.hpp"
@@ -33,22 +33,22 @@ void updateScreen(SDL_Texture* texture){
 	}
     SDL_Rect fillRect = { 0, 700, 250, 100 };
     SDL_RenderCopy(gameRenderer, gQuitTexture, NULL, &fillRect);
-    show_pacman();
-    Pacman->update();
-    Pacman->updateAngle();
+    show_docman();
+    Docman->update();
+    Docman->updateAngle();
     if (texture == bossZombie){
-        frender(bossZombie, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,zombie_alive,1 });
+        frender(bossZombie, {Docman->x, Docman->y, Docman-> angle, Docman->row, Docman->col,zombie_alive,1 });
     }
-    else frender(gPacmanTexture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,pacmanLives,1 });
+    else frender(gDocmanTexture, {Docman->x, Docman->y, Docman-> angle, Docman->row, Docman->col,docmanLives,1 });
 }
 
 
 int main(int argc, char *args[])
 {
     Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096);
-    effect1 = Mix_LoadWAV("Resources/pacman_beginning.wav");
-    effect2 = Mix_LoadWAV("Resources/pacman_death.wav");
-    effect3 = Mix_LoadWAV("Resources/pacman_eatfruit.wav");
+    effect1 = Mix_LoadWAV("Resources/docman_beginning.wav");
+    effect2 = Mix_LoadWAV("Resources/docman_death.wav");
+    effect3 = Mix_LoadWAV("Resources/docman_eatfruit.wav");
     const int FPS = 40;
     const int delay = 1000/FPS;
     
@@ -243,7 +243,7 @@ int main(int argc, char *args[])
                 handleEvent(&e);
             }
 
-            if(Pacman->powerTime == 300){
+            if(Docman->powerTime == 300){
                 Mix_PlayChannel(-1, effect3, 0);
             }
 
@@ -252,14 +252,14 @@ int main(int argc, char *args[])
 
             // different game winning/losing condiitons
             if (eggsComplete || (!BOT_alive && !BOT2_alive && !BOT3_alive)){
-                SDL_RenderCopy(gameRenderer, gPacmanWon, NULL, NULL);
+                SDL_RenderCopy(gameRenderer, gDocmanWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);
                 gameRunning = false;
                 goBackToMenu();
                 break;
             }
-            if (pacmanLives<=0){
+            if (docmanLives<=0){
                 SDL_RenderCopy(gameRenderer, gZombieWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);
@@ -268,26 +268,26 @@ int main(int argc, char *args[])
                 break;
             }
 
-            // Moving the Pacman			
-            updateScreen(gPacmanTexture);				
-            eggsComplete = (Pacman->eggsEaten == eggs);
-            scared  = Pacman->powerful;
+            // Moving the Docman			
+            updateScreen(gDocmanTexture);				
+            eggsComplete = (Docman->eggsEaten == eggs);
+            scared  = Docman->powerful;
             
             // Handling the bots
             if (BOT_alive){
-                BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+                BOT->update(Docman->row, Docman->col, (Docman->powerTime)>0);
                 BOT->updateAngle();
-                int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 if (x==2){
                     BOT_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -295,20 +295,20 @@ int main(int argc, char *args[])
             frender(greenZombie, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 
             if (BOT2_alive){
-                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
-                BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
+                pair< int, int> next2 = BOT2->target(Docman->row, Docman->col, Docman->currDirection, BOT->row, BOT->col);
+                BOT2 -> update(next2.first, next2.second, (Docman->powerTime)>0);
                 BOT2->updateAngle();
-                int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 if (x==2){
                     BOT2_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -316,20 +316,20 @@ int main(int argc, char *args[])
             frender(blueZombie, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 
             if (BOT3_alive){
-                pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
-                BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
+                pair <int, int> next3 = BOT3->changep(Docman->row, Docman->col, Docman->currDirection, 4);
+                BOT3->update(next3.first, next3.second, (Docman->powerTime)>0);
                 BOT3->updateAngle();
-                int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
                 if (x==2){
                     BOT3_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -376,7 +376,7 @@ int main(int argc, char *args[])
                 handleEvent(&e);
             }
 
-            if(Pacman->powerTime == 300){
+            if(Docman->powerTime == 300){
                 Mix_PlayChannel(-1, effect3, 0);
             }
 
@@ -414,15 +414,15 @@ int main(int argc, char *args[])
                 gameServer = false;
                 gameClient = false;
             }
-            else if (pacmanLives<=0){
+            else if (docmanLives<=0){
                 gameServer = false;
                 gameClient = false;
             }
 
-            // Moving the pacman
-            updateScreen(gPacmanTexture);
-            eggsComplete = (Pacman->eggsEaten == eggs);
-            scared  = Pacman->powerful? 1:0;
+            // Moving the docman
+            updateScreen(gDocmanTexture);
+            eggsComplete = (Docman->eggsEaten == eggs);
+            scared  = Docman->powerful? 1:0;
             buffer[0] = '0'+scared;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
 
@@ -436,17 +436,17 @@ int main(int argc, char *args[])
             zombie_alive = get<5>(enemyPos);
             frender(bossZombie, enemyPos);
             if (zombie_alive){
-                int x =Pacman->checkCollision(enemyPos);
+                int x =Docman->checkCollision(enemyPos);
                 if (x==2){
                     zombie_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -456,19 +456,19 @@ int main(int argc, char *args[])
 
             // Handling the bots
             if (BOT_alive){
-                BOT->update(Pacman->row, Pacman->col, (Pacman->powerTime)>0);
+                BOT->update(Docman->row, Docman->col, (Docman->powerTime)>0);
                 BOT->updateAngle();
-                int x= Pacman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 if (x==2){
                     BOT_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }                
@@ -480,20 +480,20 @@ int main(int argc, char *args[])
             frender(greenZombie, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col,BOT_alive, eggsComplete});
             
             if (BOT2_alive){
-                pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
-                BOT2 -> update(next2.first, next2.second, (Pacman->powerTime)>0);
+                pair< int, int> next2 = BOT2->target(Docman->row, Docman->col, Docman->currDirection, BOT->row, BOT->col);
+                BOT2 -> update(next2.first, next2.second, (Docman->powerTime)>0);
                 BOT2->updateAngle();
-                int x= Pacman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 if (x==2){
                     BOT2_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -505,20 +505,20 @@ int main(int argc, char *args[])
             frender(blueZombie, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
 
             if (BOT3_alive){
-                pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
-                BOT3->update(next3.first, next3.second, (Pacman->powerTime)>0);
+                pair <int, int> next3 = BOT3->changep(Docman->row, Docman->col, Docman->currDirection, 4);
+                BOT3->update(next3.first, next3.second, (Docman->powerTime)>0);
                 BOT3->updateAngle();
-                int x= Pacman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+                int x= Docman->checkCollision({BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
                 if (x==2){
                     BOT3_alive =0;
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
                 else if (x==1){
-                    pacmanLives--;
-                    Pacman->row = Pacman->nxtRow = Pacman->col = Pacman->nxtCol = 1;
-                    Pacman->x = Pacman->cellWidth;
-                    Pacman->y = Pacman->cellHeight; 
+                    docmanLives--;
+                    Docman->row = Docman->nxtRow = Docman->col = Docman->nxtCol = 1;
+                    Docman->x = Docman->cellWidth;
+                    Docman->y = Docman->cellHeight; 
                     Mix_PlayChannel(-1, effect2, 0);
                     SDL_Delay(2000);
                 }
@@ -530,15 +530,15 @@ int main(int argc, char *args[])
             frender(pinkZombie, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
 
             // Sending our position to the client
-            pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col, pacmanLives, eggsComplete});
+            pos_to_buffer({Docman->x, Docman->y, Docman->angle, Docman->row, Docman->col, docmanLives, eggsComplete});
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
 
             if (eggsComplete || (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive)){
-                SDL_RenderCopy(gameRenderer, gPacmanWon, NULL, NULL);
+                SDL_RenderCopy(gameRenderer, gDocmanWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);
             }
-            else if (pacmanLives<=0){
+            else if (docmanLives<=0){
                 SDL_RenderCopy(gameRenderer, gZombieWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);
@@ -620,7 +620,7 @@ int main(int argc, char *args[])
                 gameServer = false;
                 gameClient = false;
             }
-            else if (pacmanLives<=0){
+            else if (docmanLives<=0){
                 gameServer = false;
                 gameClient = false;
             }
@@ -635,18 +635,18 @@ int main(int argc, char *args[])
             change_maze();
 
             // Sending our position to the server
-            pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col, zombie_alive, 0});
+            pos_to_buffer({Docman->x, Docman->y, Docman->angle, Docman->row, Docman->col, zombie_alive, 0});
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
 
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-            zombie_alive = buffer[0]-'0';   // TO know if the Pacman killed us, effect will be visible in the next iteration or both the Server and client
+            zombie_alive = buffer[0]-'0';   // TO know if the Docman killed us, effect will be visible in the next iteration or both the Server and client
 
             // Handling the bots
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
             tuple<int, int, int, int, int, int, int> Botpos = buffer_to_pos();
             BOT_alive = get<5>(Botpos);
             if (!BOT_alive){
-                int x= Pacman->checkCollision(Botpos);
+                int x= Docman->checkCollision(Botpos);
                 if (x !=0) BOT_alive = 1;
             }
             buffer[0] = '0'+BOT_alive;
@@ -658,7 +658,7 @@ int main(int argc, char *args[])
             Botpos = buffer_to_pos();
             BOT2_alive = get<5>(Botpos);
             if (!BOT2_alive){
-                int x= Pacman->checkCollision(Botpos);
+                int x= Docman->checkCollision(Botpos);
                 if (x !=0) BOT2_alive = 1;
             }
             buffer[0] = '0' + BOT2_alive;
@@ -670,7 +670,7 @@ int main(int argc, char *args[])
             Botpos = buffer_to_pos();
             BOT3_alive = get<5>(Botpos);
             if (!BOT3_alive){
-                int x = Pacman->checkCollision(Botpos);
+                int x = Docman->checkCollision(Botpos);
                 if (x != 0) BOT3_alive = 1;
             }
             buffer[0] = '0'+BOT3_alive;
@@ -680,17 +680,17 @@ int main(int argc, char *args[])
 
             // getting the position of server and rendering it
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
-            tuple<int, int, int, int, int, int, int> PacmanPos = buffer_to_pos();
-            pacmanLives = get<5>(PacmanPos);
-            eggsComplete = get<6>(PacmanPos);
-            frender(gPacmanTexture, PacmanPos);
+            tuple<int, int, int, int, int, int, int> DocmanPos = buffer_to_pos();
+            docmanLives = get<5>(DocmanPos);
+            eggsComplete = get<6>(DocmanPos);
+            frender(gDocmanTexture, DocmanPos);
 
             if (eggsComplete || (!BOT_alive && !BOT2_alive && !BOT3_alive && !zombie_alive)){
-                SDL_RenderCopy(gameRenderer, gPacmanWon, NULL, NULL);
+                SDL_RenderCopy(gameRenderer, gDocmanWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);
             }
-            else if (pacmanLives<=0){
+            else if (docmanLives<=0){
                 SDL_RenderCopy(gameRenderer, gZombieWon, NULL, NULL);
                 SDL_RenderPresent( gameRenderer );
                 SDL_Delay(5000);

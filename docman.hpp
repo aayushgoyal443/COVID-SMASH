@@ -8,17 +8,17 @@
 
 #define POWER_TIME 300
 
-class pacman{
+class docman{
 public:
     static SDL_Renderer* Renderer;
-    pacman(int n);
+    docman(int n);
     void HandleEvent(SDL_Event* event);
     int checkCollision(tuple<int,int,int,int,int,int,int> posMonster);
     void update();
     int updateAngle();
     bool tryChanging();
     void keepMoving();
-    int type = 0; // 0 for pacman and 1 for monster
+    int type = 0; // 0 for docman and 1 for monster
     int eggsEaten = 0;
     int frame = 0;
     bool powerful = false;
@@ -36,7 +36,7 @@ public:
     int angle=0;    
 };
 
-pacman::pacman(int n){
+docman::docman(int n){
     type = n;
     if (type ==0){
         row = nxtRow = col = nxtCol = 1;
@@ -49,7 +49,7 @@ pacman::pacman(int n){
     }
 }
 
-void pacman::HandleEvent(SDL_Event* event){
+void docman::HandleEvent(SDL_Event* event){
     if( event->type == SDL_KEYDOWN )
     {
         switch( event->key.keysym.sym )
@@ -63,7 +63,7 @@ void pacman::HandleEvent(SDL_Event* event){
     
 }
 
-int pacman::checkCollision(tuple<int,int,int,int,int,int,int> posMonster){
+int docman::checkCollision(tuple<int,int,int,int,int,int,int> posMonster){
     int rowMonster = get<3>(posMonster);
     int colMonster = get<4>(posMonster);
     int xMonster = get<0>(posMonster);
@@ -79,7 +79,7 @@ int pacman::checkCollision(tuple<int,int,int,int,int,int,int> posMonster){
     return 0;   // when nothing happens
 }
 
-bool pacman::tryChanging(){
+bool docman::tryChanging(){
     int tcol;
     int trow;
     if(nextDirection=="still" || nextDirection==currDirection){
@@ -166,7 +166,7 @@ bool pacman::tryChanging(){
     return true;
 }
 
-void pacman::keepMoving(){
+void docman::keepMoving(){
     if(currDirection == "still")return;
     else if(currDirection=="left"){
         if(x%cellWidth!=0){x=x-3;return;}
@@ -270,7 +270,7 @@ void pacman::keepMoving(){
     }
 }
 
-void pacman::update(){
+void docman::update(){
     if(type == 0){
         powerTime = max(0,powerTime-1);
         if(powerTime>0)powerful=true;
@@ -279,7 +279,7 @@ void pacman::update(){
     if(!tryChanging())keepMoving();
 }
 
-int pacman::updateAngle(){
+int docman::updateAngle(){
     if (currDirection =="still") return angle;  // this will retain the angle
     if (currDirection =="down") angle = 90;
     else if (currDirection == "left") angle = 180;

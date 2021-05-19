@@ -35,7 +35,7 @@ int BOT_alive=1;
 int BOT2_alive =1;
 int BOT3_alive=1;
 int zombie_alive=1;
-int pacmanLives =5;
+int docmanLives =5;
 int eggsComplete = 0;
 int scared = 0;
 int score=0;
@@ -67,7 +67,7 @@ SDL_Texture *gameCurrentTexture = NULL;
 
 SDL_Texture* gWallTexture = NULL;
 SDL_Texture* gGrassTexture = NULL;
-SDL_Texture* gPacmanTexture = NULL;
+SDL_Texture* gDocmanTexture = NULL;
 SDL_Texture* bossZombie = NULL;
 SDL_Texture* pinkZombie = NULL;
 SDL_Texture* blueZombie = NULL;
@@ -77,13 +77,13 @@ SDL_Texture* medicineTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 SDL_Texture* deadZombieTexture =NULL;
 SDL_Texture* gQuitTexture = NULL;
-SDL_Texture* gPacmanWon = NULL;
+SDL_Texture* gDocmanWon = NULL;
 SDL_Texture* gZombieWon = NULL;
 
-pacman* Pacman = NULL;
-bot* BOT = NULL;    // this will directly chase the Pacman 
-bot* BOT2 = NULL;   // this will directly chase the Pacman from 180 degree behind
-bot* BOT3 = NULL;   // this will chase the pacman from Front, 4 rows change scheme.
+docman* Docman = NULL;
+bot* BOT = NULL;    // this will directly chase the Docman 
+bot* BOT2 = NULL;   // this will directly chase the Docman from 180 degree behind
+bot* BOT3 = NULL;   // this will chase the docman from Front, 4 rows change scheme.
 
 Mix_Chunk* effect1;
 Mix_Chunk* effect2;
@@ -233,10 +233,10 @@ bool loadMedia()
         success = false;
     }
 
-    gPacmanTexture = loadTexture("Resources/pacman.png");
-    if (gPacmanTexture == NULL)
+    gDocmanTexture = loadTexture("Resources/docman.png");
+    if (gDocmanTexture == NULL)
     {
-        printf("Failed to load Pacman image!\n");
+        printf("Failed to load Docman image!\n");
         success = false;
     }
 
@@ -282,10 +282,10 @@ bool loadMedia()
         success = false;
     }
 
-    gPacmanWon = loadTexture("Resources/pacman_won.png");
-    if (gPacmanWon == NULL)
+    gDocmanWon = loadTexture("Resources/docman_won.png");
+    if (gDocmanWon == NULL)
     {
-        printf("Failed to load Pacman Won image!\n");
+        printf("Failed to load Docman Won image!\n");
         success = false;
     }
 
@@ -346,8 +346,8 @@ void close()
 
     SDL_DestroyTexture( gWallTexture );
 	gWallTexture = NULL;
-	SDL_DestroyTexture( gPacmanTexture );
-	gPacmanTexture = NULL;
+	SDL_DestroyTexture( gDocmanTexture );
+	gDocmanTexture = NULL;
 	SDL_DestroyTexture( gGrassTexture );
 	gGrassTexture = NULL;
 
@@ -398,12 +398,12 @@ void createNewGame(int type){
     BOT = new bot();
     BOT2 = new bot();
     BOT3 = new bot();
-    Pacman = new pacman(type);
+    Docman = new docman(type);
     BOT_alive=1;
     BOT2_alive =1;
     BOT3_alive=1;
     zombie_alive=1;
-    pacmanLives =5;
+    docmanLives =5;
     eggsComplete = 0;
     scared = 0;
     score =0;
@@ -416,20 +416,20 @@ void goBackToMenu(){
     SDL_RenderPresent(gameRenderer);
 }
 
-void show_pacman(){
+void show_docman(){
     int x_last = width*cellWidth;
     int y = (height+1)*cellHeight;
-    for (int i=1; i<pacmanLives; i++){
+    for (int i=1; i<docmanLives; i++){
         SDL_Rect fillRect = { x_last- 3*cellWidth, y, 2*cellWidth, 2*cellHeight };
-        SDL_RenderCopy(gameRenderer, gPacmanTexture, NULL, &fillRect);
+        SDL_RenderCopy(gameRenderer, gDocmanTexture, NULL, &fillRect);
         x_last -= 3*cellWidth;
     }
 }
 
 void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
-    SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
-    if (texture!= gPacmanTexture && get<5>(pos)==0) texture= deadZombieTexture;
-    else if (texture!=gPacmanTexture && scared==1) texture = scaredZombie;
+    SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Docman->cellWidth, Docman->cellHeight };
+    if (texture!= gDocmanTexture && get<5>(pos)==0) texture= deadZombieTexture;
+    else if (texture!=gDocmanTexture && scared==1) texture = scaredZombie;
 	if (get<2>(pos) == 180){
 		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
 	}
@@ -437,5 +437,5 @@ void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
 }
 
 void handleEvent(SDL_Event* event){
-    Pacman->HandleEvent(event);
+    Docman->HandleEvent(event);
 }
