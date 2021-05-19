@@ -66,6 +66,9 @@ SDL_Texture* gZombieTexture = NULL;
 SDL_Texture* medicineTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 SDL_Texture* deadZombieTexture =NULL;
+SDL_Texture* gQuitTexture = NULL;
+SDL_Texture* gPacmanWon = NULL;
+SDL_Texture* gZombieWon = NULL;
 
 pacman* Pacman = NULL;
 bot* BOT = NULL;    // this will directly chase the Pacman 
@@ -234,6 +237,27 @@ bool loadMedia()
         success = false;
     }
 
+    gQuitTexture = loadTexture("Resources/quit_button.png");
+    if (gQuitTexture == NULL)
+    {
+        printf("Failed to load Quit Button!\n");
+        success = false;
+    }
+
+    gPacmanWon = loadTexture("Resources/pacman_won.png");
+    if (gPacmanWon == NULL)
+    {
+        printf("Failed to load Pacman Won image!\n");
+        success = false;
+    }
+
+    gZombieWon = loadTexture("Resources/zombie_won.png");
+    if (gZombieWon == NULL)
+    {
+        printf("Failed to load Zombie won image!\n");
+        success = false;
+    }
+
     deadZombieTexture = loadTexture("Resources/dead_zombie.png");
     if (deadZombieTexture == NULL)
     {
@@ -295,6 +319,11 @@ void close()
     gameWindow = NULL;
     gameRenderer = NULL;
 
+    Mix_FreeChunk(effect1);
+    Mix_FreeChunk(effect2);
+    Mix_FreeChunk(effect3);
+    Mix_CloseAudio();
+
     //Quit SDL subsystems
     IMG_Quit();
     SDL_Quit();
@@ -325,4 +354,47 @@ SDL_Texture *loadTexture(std::string path)
     }
 
     return newTexture;
+}
+
+void createNewGame(int type){
+    BOT = new bot();
+    BOT2 = new bot();
+    BOT3 = new bot();
+    Pacman = new pacman(type);
+    BOT_alive=1;
+    BOT2_alive =1;
+    BOT3_alive=2;
+    zombie_alive=1;
+    pacmanLives =5;
+    eggsComplete = 0;
+}
+
+void goBackToMenu(){
+    gameCurrentTexture = gameKeyPressTextures[KEY_MENU];
+    SDL_RenderClear(gameRenderer);
+    SDL_RenderCopy(gameRenderer, gameCurrentTexture, NULL, NULL);
+    SDL_RenderPresent(gameRenderer);
+}
+
+void show_pacman(){
+    int x_last = width*cellWidth;
+    int y = (height+1)*cellHeight;
+    for (int i=1; i<pacmanLives; i++){
+        SDL_Rect fillRect = { x_last- 3*cellWidth, y, 2*cellWidth, 2*cellHeight };
+        SDL_RenderCopy(gameRenderer, gPacmanTexture, NULL, &fillRect);
+        x_last -= 3*cellWidth;
+    }
+}
+
+void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
+    SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
+    if (texture == gZombieTexture && get<5>(pos)==0) texture= deadZombieTexture;
+	if (get<2>(pos) == 180){
+		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
+	}
+	else SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, get<2>(pos) , NULL,SDL_FLIP_NONE );
+}
+
+void handleEvent(SDL_Event* event){
+    Pacman->HandleEvent(event);
 }

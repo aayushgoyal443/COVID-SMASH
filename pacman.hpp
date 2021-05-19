@@ -70,11 +70,9 @@ int pacman::checkCollision(tuple<int,int,int,int,int,int,int> posMonster){
     int yMonster = get<1>(posMonster); 
     if(abs(xMonster- x)<=5 && abs(yMonster- y)<=5){
         if(powerful){
-            cout<<"Monster Killed\n";
             return 2;
         }
         else{
-            cout<<"Pacman Killed\n";
             return 1;
         }        
     }
