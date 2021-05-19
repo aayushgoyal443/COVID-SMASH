@@ -154,7 +154,7 @@ bool init()
         }
 
         //Create window
-        gameWindow = SDL_CreateWindow("PACMAN", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+        gameWindow = SDL_CreateWindow("COVID SMASH", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
         if (gameWindow == NULL)
         {
             printf("Window could not be created! SDL Error: %s\n", SDL_GetError());
