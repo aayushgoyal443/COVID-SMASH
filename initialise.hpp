@@ -8,6 +8,10 @@
 
 using namespace std;
 
+const int BOT_SCORE= 100;
+const int BOSS_SCORE= 250;
+const int MEDICINE_SCORE= 5;
+const int VACCINE_SCORE= 10;
 
 bool gameRunning = false;
 bool gameServer = false;
@@ -29,10 +33,12 @@ enum KeyPress_start
 
 int BOT_alive=1;
 int BOT2_alive =1;
-int BOT3_alive=2;
+int BOT3_alive=1;
 int zombie_alive=1;
 int pacmanLives =5;
 int eggsComplete = 0;
+int scared = 0;
+int score=0;
 
 
 //Starts up SDL and creates window
@@ -62,7 +68,11 @@ SDL_Texture *gameCurrentTexture = NULL;
 SDL_Texture* gWallTexture = NULL;
 SDL_Texture* gGrassTexture = NULL;
 SDL_Texture* gPacmanTexture = NULL;
-SDL_Texture* gZombieTexture = NULL;
+SDL_Texture* bossZombie = NULL;
+SDL_Texture* pinkZombie = NULL;
+SDL_Texture* blueZombie = NULL;
+SDL_Texture* greenZombie = NULL;
+SDL_Texture* scaredZombie = NULL;
 SDL_Texture* medicineTexture = NULL;
 SDL_Texture* vaccineTexture = NULL;
 SDL_Texture* deadZombieTexture =NULL;
@@ -230,8 +240,36 @@ bool loadMedia()
         success = false;
     }
 
-    gZombieTexture = loadTexture("Resources/zombie.png");
-    if (gZombieTexture == NULL)
+    bossZombie = loadTexture("Resources/boss_zombie.png");
+    if (bossZombie == NULL)
+    {
+        printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
+    greenZombie = loadTexture("Resources/green_zombie.png");
+    if (greenZombie == NULL)
+    {
+        printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
+    pinkZombie = loadTexture("Resources/pink_zombie.png");
+    if (pinkZombie == NULL)
+    {
+        printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
+    blueZombie = loadTexture("Resources/blue_zombie.png");
+    if (blueZombie == NULL)
+    {
+        printf("Failed to load Zombie image!\n");
+        success = false;
+    }
+
+    scaredZombie = loadTexture("Resources/scared_zombie.png");
+    if (scaredZombie == NULL)
     {
         printf("Failed to load Zombie image!\n");
         success = false;
@@ -363,10 +401,12 @@ void createNewGame(int type){
     Pacman = new pacman(type);
     BOT_alive=1;
     BOT2_alive =1;
-    BOT3_alive=2;
+    BOT3_alive=1;
     zombie_alive=1;
     pacmanLives =5;
     eggsComplete = 0;
+    scared = 0;
+    score =0;
 }
 
 void goBackToMenu(){
@@ -388,7 +428,8 @@ void show_pacman(){
 
 void frender(SDL_Texture* texture, tuple<int,int,int,int,int, int, int> pos){
     SDL_Rect fillRect = { get<0>(pos), get<1>(pos), Pacman->cellWidth, Pacman->cellHeight };
-    if (texture == gZombieTexture && get<5>(pos)==0) texture= deadZombieTexture;
+    if (texture!= gPacmanTexture && get<5>(pos)==0) texture= deadZombieTexture;
+    else if (texture!=gPacmanTexture && scared==1) texture = scaredZombie;
 	if (get<2>(pos) == 180){
 		SDL_RenderCopyEx(gameRenderer, texture, NULL, &fillRect, 0 , NULL,SDL_FLIP_HORIZONTAL);
 	}

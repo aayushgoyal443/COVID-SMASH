@@ -193,6 +193,7 @@ void clearMaze(){
 }
 
 void formMaze(){
+    eggs=0;
     srand(time(0));
     clearMaze();
     initMaze();

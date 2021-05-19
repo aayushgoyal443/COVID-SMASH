@@ -36,8 +36,8 @@ void updateScreen(SDL_Texture* texture){
     show_pacman();
     Pacman->update();
     Pacman->updateAngle();
-    if (texture == gZombieTexture){
-        frender(gZombieTexture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,zombie_alive,1 });
+    if (texture == bossZombie){
+        frender(bossZombie, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,zombie_alive,1 });
     }
     else frender(gPacmanTexture, {Pacman->x, Pacman->y, Pacman-> angle, Pacman->row, Pacman->col,pacmanLives,1 });
 }
@@ -131,7 +131,7 @@ int main(int argc, char *args[])
                     {
                     case SDLK_s:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_2P]){
-                            cout<<"hello"<<endl;
+                            // cout<<"hello"<<endl;
                             formMaze();
                             make_server();
                             createNewGame(0);
@@ -157,7 +157,7 @@ int main(int argc, char *args[])
                     case SDLK_F1:
                         if (gameCurrentTexture == gameKeyPressTextures[KEY_MENU]){
                             //gameCurrentTexture = gameKeyPressTextures[KEY_1P];
-                            cout<<"hello"<<endl;
+                            // cout<<"hello"<<endl;
                             gameRunning=true;
                             formMaze();
                             createNewGame(0);
@@ -271,6 +271,7 @@ int main(int argc, char *args[])
             // Moving the Pacman			
             updateScreen(gPacmanTexture);				
             eggsComplete = (Pacman->eggsEaten == eggs);
+            scared  = Pacman->powerful;
             
             // Handling the bots
             if (BOT_alive){
@@ -291,7 +292,7 @@ int main(int argc, char *args[])
                     SDL_Delay(2000);
                 }
             }
-            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
+            frender(greenZombie, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col, BOT_alive, eggsComplete});
                 
             if (BOT2_alive){
                 pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
@@ -312,7 +313,7 @@ int main(int argc, char *args[])
                     SDL_Delay(2000);
                 }
             }
-            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+            frender(blueZombie, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
                 
             if (BOT3_alive){
                 pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
@@ -333,7 +334,7 @@ int main(int argc, char *args[])
                     SDL_Delay(2000);
                 }
             }
-            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+            frender(pinkZombie, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
             
             SDL_RenderPresent( gameRenderer );	
             frameTime = SDL_GetTicks()-frameStart;
@@ -421,6 +422,9 @@ int main(int argc, char *args[])
             // Moving the pacman
             updateScreen(gPacmanTexture);
             eggsComplete = (Pacman->eggsEaten == eggs);
+            scared  = Pacman->powerful? 1:0;
+            buffer[0] = '0'+scared;
+            sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len);
 
             // Sending the maze data
             maze_to_buffer();
@@ -430,7 +434,7 @@ int main(int argc, char *args[])
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
             tuple<int, int, int, int, int, int, int> enemyPos = buffer_to_pos(); 
             zombie_alive = get<5>(enemyPos);
-            frender(gZombieTexture, enemyPos);
+            frender(bossZombie, enemyPos);
             if (zombie_alive){
                 int x =Pacman->checkCollision(enemyPos);
                 if (x==2){
@@ -473,7 +477,7 @@ int main(int argc, char *args[])
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
             BOT_alive = buffer[0]-'0';
-            frender(gZombieTexture, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col,BOT_alive, eggsComplete});
+            frender(greenZombie, {BOT->x, BOT->y, BOT->angle, BOT->row, BOT->col,BOT_alive, eggsComplete});
             
             if (BOT2_alive){
                 pair< int, int> next2 = BOT2->target(Pacman->row, Pacman->col, Pacman->currDirection, BOT->row, BOT->col);
@@ -498,7 +502,7 @@ int main(int argc, char *args[])
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
             BOT2_alive = buffer[0]-'0';
-            frender(gZombieTexture, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
+            frender(blueZombie, {BOT2->x, BOT2->y, BOT2->angle, BOT2->row, BOT2->col, BOT2_alive, eggsComplete});
 
             if (BOT3_alive){
                 pair <int, int> next3 = BOT3->changep(Pacman->row, Pacman->col, Pacman->currDirection, 4);
@@ -523,7 +527,7 @@ int main(int argc, char *args[])
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&cliaddr, c_len );
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&cliaddr, &c_len);
             BOT3_alive = buffer[0]-'0';
-            frender(gZombieTexture, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
+            frender(pinkZombie, {BOT3->x, BOT3->y, BOT3->angle, BOT3->row, BOT3->col, BOT3_alive, eggsComplete});
 
             // Sending our position to the client
             pos_to_buffer({Pacman->x, Pacman->y, Pacman->angle, Pacman->row, Pacman->col, pacmanLives, eggsComplete});
@@ -622,7 +626,9 @@ int main(int argc, char *args[])
             }
 
             // Moving the Monster (if was alive)
-            updateScreen(gZombieTexture);
+            recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
+            scared = buffer[0]-'0';
+            updateScreen(bossZombie);
 
             // Changing the eaten eggs and vaccine info
             recvfrom(sockfd, buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
@@ -646,7 +652,7 @@ int main(int argc, char *args[])
             buffer[0] = '0'+BOT_alive;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
             get<5>(Botpos) = BOT_alive;
-            frender(gZombieTexture, Botpos );
+            frender(greenZombie, Botpos );
 
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
             Botpos = buffer_to_pos();
@@ -658,7 +664,7 @@ int main(int argc, char *args[])
             buffer[0] = '0' + BOT2_alive;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
             get<5>(Botpos) = BOT2_alive;
-            frender(gZombieTexture, Botpos );
+            frender(blueZombie, Botpos );
 
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
             Botpos = buffer_to_pos();
@@ -670,7 +676,7 @@ int main(int argc, char *args[])
             buffer[0] = '0'+BOT3_alive;
             sendto(sockfd, buffer, 850, MSG_CONFIRM, (struct sockaddr *)&servaddr, s_len );
             get<5>(Botpos) = BOT3_alive;
-            frender(gZombieTexture, Botpos );
+            frender(pinkZombie, Botpos );
 
             // getting the position of server and rendering it
             recvfrom (sockfd,  buffer, 850, MSG_WAITALL, (struct sockaddr *)&servaddr, &s_len);
